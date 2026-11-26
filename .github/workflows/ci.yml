@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Check against the README of the matching DeckyHub branch.
+      PLUGIN_BRANCH: ${{ (github.base_ref || github.ref_name) == 'main' && 'main' || 'develop' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.x"
+      - run: pip install pillow==13.0.0 markdown==3.7 ruff==0.17.6
+      - run: npm ci
+      - run: ruff format --check && ruff check
+      - run: npm run typecheck
+      - run: npm test
+      # Builds the site and checks every page for what search engines and AI assistants need, and for broken links.
+      - run: npm run build
+        env:
+          # The release notes page reads DeckyHub's releases from the GitHub API.
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Accessibility audit
+        run: |
+          npx playwright install --with-deps chromium
+          python -m http.server 8765 --directory _site >/tmp/deckyhub-site.log 2>&1 &
+          server=$!
+          trap 'kill "$server"' EXIT
+          for i in {1..30}; do curl --silent --fail http://127.0.0.1:8765/ >/dev/null && break; sleep 1; done
+          npm run a11y
