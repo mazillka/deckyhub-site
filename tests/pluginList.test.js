@@ -74,6 +74,15 @@ test("an unknown audit code still shows, and a record with no data adds only its
   assert.equal(bare[0].textContent, "All details on DeckyHub");
 });
 
+test("blocked and not-in-source are red, other warnings are not", () => {
+  const record = { id: "x", warnings: ["blocked", "not-in-source", "obfuscated"] };
+  const badges = describe(document, record, {}).flatMap((part) => part.children || []);
+  assert.deepEqual(
+    badges.map((item) => item.className.split("remote-badge-")[1]),
+    ["bad", "bad", "warn"],
+  );
+});
+
 test("a bad id gets no link", () => {
   assert.deepEqual(describe(document, { id: "../evil" }, {}), []);
 });
