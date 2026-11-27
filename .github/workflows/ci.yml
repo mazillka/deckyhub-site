@@ -32,7 +32,11 @@ jobs:
       - run: npm ci
       - run: ruff format --check && ruff check
       - run: npm run typecheck
+      # The registry's shared warning texts and cases (tests/test_registry_contract.py, tests/registry-contract.test.js).
+      - run: git clone -q --depth 1 --branch "$PLUGIN_BRANCH" https://github.com/mazillka/deckyhub-registry.git "$RUNNER_TEMP/registry"
       - run: npm test
+        env:
+          DECKYHUB_REGISTRY: ${{ runner.temp }}/registry/registry/apps.json
       # Builds the site and checks every page for what search engines and AI assistants need, and for broken links.
       - run: npm run build
         env:

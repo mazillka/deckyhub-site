@@ -67,14 +67,14 @@ These warnings come from Decky Extended Plugins' automated [security audit](http
 
 | Warning | What the audit found |
 | --- | --- |
-| Blocked by audit | Malware or a broken archive. Not recommended for installation. |
-| Reads private data | It reads Steam login data, SSH keys or secrets from the environment. |
-| Changes system startup | It edits shell profiles, preloads libraries, loads kernel modules or adds device rules, which keep working outside Decky. |
+| Blocked by audit | The audit blocked this release, for example for suspected malware or a broken archive. |
+| Reads private data | The audit found code that may access Steam login data, SSH keys or secrets from the environment. |
+| Changes system startup | The audit found code that may change shell profiles, preloaded libraries, kernel modules or device rules. Such changes can keep working outside Decky. |
 | Code not in its repo | The release has scripts or programs that aren't in its GitHub source, so you can't read what they do. |
-| Hidden code | It contains encoded or packed code that's hard to read. |
-| Skips HTTPS checks | It turns off certificate checks, so what it downloads could be tampered with. |
-| Runs downloaded scripts | It downloads a script and runs it straight away. |
-| Known vulnerabilities | It bundles libraries with published security flaws. |
+| Hidden code | The audit found encoded or packed code that's hard to read. |
+| Skips HTTPS checks | The audit found code that turns off certificate checks, so what it downloads could be tampered with. |
+| Runs downloaded scripts | The audit found code that downloads a script and runs it straight away. |
+| Known vulnerabilities | The audit found bundled libraries with published security flaws. |
 
 A warning about a newer pre-release is labelled **Pre-release:**. Download counts, stars and warnings come from the registry, refreshed every hour.
 

@@ -16,7 +16,7 @@ Repository skills live only in `.agents/skills/`; `.claude/skills` is a symlink 
 ## Rules
 
 - **Informative, never judging.** Give every fact with its explanation, say what is missing (no scan yet, no audit data) as plainly as what was found, and don't combine findings into a verdict or score. The full rule is in deckyhub-plugin's `AGENTS.md`.
-- A change to badges, warnings or scan wording (`devtools/plugin_badges.py`, `scan_format.py`, `plugin_data.py`, `docs/remote-plugins.js`) also goes to the plugin, the browser extension and the registry; say in the pull request if one doesn't apply. deckyhub-registry's tests read the `WARNINGS` table in `devtools/plugin_data.py` from this repository's `main`.
+- A change to badges, warnings or scan wording (`devtools/plugin_badges.py`, `scan_format.py`, `plugin_data.py`, `docs/remote-plugins.js`) also goes to the plugin, the browser extension and the registry; say in the pull request if one doesn't apply. Warning texts and tones come from the registry's `registry/warnings.json`: change them there first, then in the fallback copy `devtools/warnings.json`. `tests/test_registry_contract.py` and `tests/registry-contract.test.js` compare both with the registry and run its shared cases (`DECKYHUB_REGISTRY`).
 - Say "your device" and "Decky Loader", not "Steam Deck", unless something is true only of a Steam Deck.
 - Don't edit the Help, Guide and Authors Markdown copies (`docs/*.md`, `docs/uk/*.md`): edit the HTML page, then run `python devtools/html_to_md.py`.
 - Pages, `robots.txt`, the sitemap, `llms.txt` and structured data: the `seo-and-ai` skill. Ukrainian text: the `localization` skill.

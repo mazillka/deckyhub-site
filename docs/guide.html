@@ -149,15 +149,15 @@ blockquote{margin:12px 0;padding:8px 16px;border-left:3px solid var(--accent);ba
 <tbody>
 <tr>
 <td><strong>Blocked by audit</strong></td>
-<td>Malware or a broken archive. Not recommended for installation.</td>
+<td>The audit blocked this release, for example for suspected malware or a broken archive.</td>
 </tr>
 <tr>
 <td><strong>Reads private data</strong></td>
-<td>It reads Steam login data, SSH keys or secrets from the environment.</td>
+<td>The audit found code that may access Steam login data, SSH keys or secrets from the environment.</td>
 </tr>
 <tr>
 <td><strong>Changes system startup</strong></td>
-<td>It edits shell profiles, preloads libraries, loads kernel modules or adds device rules, which keep working outside Decky.</td>
+<td>The audit found code that may change shell profiles, preloaded libraries, kernel modules or device rules. Such changes can keep working outside Decky.</td>
 </tr>
 <tr>
 <td><strong>Code not in its repo</strong></td>
@@ -165,19 +165,19 @@ blockquote{margin:12px 0;padding:8px 16px;border-left:3px solid var(--accent);ba
 </tr>
 <tr>
 <td><strong>Hidden code</strong></td>
-<td>It contains encoded or packed code that's hard to read.</td>
+<td>The audit found encoded or packed code that's hard to read.</td>
 </tr>
 <tr>
 <td><strong>Skips HTTPS checks</strong></td>
-<td>It turns off certificate checks, so what it downloads could be tampered with.</td>
+<td>The audit found code that turns off certificate checks, so what it downloads could be tampered with.</td>
 </tr>
 <tr>
 <td><strong>Runs downloaded scripts</strong></td>
-<td>It downloads a script and runs it straight away.</td>
+<td>The audit found code that downloads a script and runs it straight away.</td>
 </tr>
 <tr>
 <td><strong>Known vulnerabilities</strong></td>
-<td>It bundles libraries with published security flaws.</td>
+<td>The audit found bundled libraries with published security flaws.</td>
 </tr>
 </tbody>
 </table>

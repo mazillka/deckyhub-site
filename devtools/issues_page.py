@@ -81,7 +81,10 @@ def issues_page(shell: dict[str, str], apps: list[dict], data: dict) -> str:
         )
         for kind in ("infected", "partial")
     ]
-    issues += [(key, label, "stale" if key == "blocked" else "warn", hint) for key, (label, hint) in WARNINGS.items()]
+    issues += [
+        (key, label, "stale" if key in ("blocked", "not-in-source") else "warn", hint)
+        for key, (label, hint) in data.get("warnings", WARNINGS).items()
+    ]
     issues.append(
         (
             "version-mismatch",

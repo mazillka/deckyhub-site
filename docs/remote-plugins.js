@@ -49,7 +49,8 @@ function warningBadges(document, record, labels) {
     for (const code of record[field] || []) {
       if (field === "prereleaseWarnings" && (record.warnings || []).includes(code)) continue;
       const [label, hint] = labels[code] || [code, "The registry reported this audit finding."];
-      found.push(badge(document, prefix + label, code === "blocked" ? "bad" : "warn", hint));
+      const kind = code === "blocked" || code === "not-in-source" ? "bad" : "warn";
+      found.push(badge(document, prefix + label, kind, hint));
     }
   }
   return found;
