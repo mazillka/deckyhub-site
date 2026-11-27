@@ -65,10 +65,38 @@ class PluginPageTests(unittest.TestCase):
         )
         self.assertNotIn("evil.example", elsewhere)
         self.assertIn("https://github.com/MWGIH/DeckyMultiFrameGen/releases", elsewhere)
-        self.assertNotIn(
-            "What&#8217;s new",
-            plugin_pages.plugin_page(shell, APP, {}, {}, {}, [APP], releases=[{**release, "body": ""}]),
-        )
+        # The newest release without notes says so; an older release's notes don't stand in for it.
+        silent = {**release, "tag_name": "v1.3.0", "body": "**Full Changelog**: https://github.com/a/b/compare/1...2"}
+        page = plugin_pages.plugin_page(shell, APP, {}, {}, {}, [APP], releases=[silent, release])
+        self.assertIn("What&#8217;s new in v1.3.0", page)
+        self.assertIn("has no written notes", page)
+        self.assertNotIn("Now faster.", page)
+
+    def test_release_notes_keep_no_leftovers_of_stripped_links(self):
+        for body, notes in (
+            ("## What's Changed\r\n**Full Changelog**: https://github.com/a/b/compare/1...2\r\n", ""),
+            ("[Full changelog](https://github.com/a/b)", ""),
+            ("**Full Changelog** [v1 to v2](https://github.com/a/b)\nFixed it.", "Fixed it."),
+            ("## Full Changelog\n- Fixed it", "Fixed it"),
+            ("Full changelog is in the wiki.", "Full changelog is in the wiki."),
+            ("* Fix by @me in https://github.com/a/b/pull/7", "Fix by @me"),
+        ):
+            self.assertEqual(plugin_pages.plain_notes(body), notes, body)
+
+    def test_the_clean_scan_caveat_is_left_out_under_a_found_threat(self):
+        for result, said in (("clean", True), ("infected", False)):
+            scans = {"stable": {"file": "a.zip", "tag": "v1", "clamav": {"result": result}}}
+            (badge,) = plugin_pages.badges_of({}, scans, {})
+            self.assertEqual("A clean scan isn't proof of safety." in badge, said, result)
+
+    def test_the_ai_note_links_a_commit_instead_of_printing_its_address(self):
+        evidence = [
+            "Commit author: Claude (https://github.com/a/b/commit/abc)",
+            'README: "<AI> (https://evil.example)"',
+        ]
+        (badge,) = plugin_pages.badges_of({"ai": evidence}, {}, {})
+        self.assertIn('Claude (<a href="https://github.com/a/b/commit/abc">commit</a>)', badge)
+        self.assertIn("&lt;AI&gt; (https://evil.example)", badge)
 
     def test_a_store_only_page_shows_no_release_notes(self):
         shell = plugin_pages.shell_of((ROOT / "docs" / "releases.html").read_text(encoding="utf-8"))

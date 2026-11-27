@@ -10,6 +10,15 @@ from scan_format import SCAN_LABELS, SCAN_RESULTS, external_results, scan_kind, 
 NOT_REVIEWED = "DeckyHub is not the Decky store and nobody reviews these plugins, DeckyHub included. A clean scan only means no known malware was found."
 
 
+def ai_evidence(entries: list[str]) -> str:
+    """What marked a plugin as AI-assisted, escaped, with each "(address)" on GitHub as a short link."""
+    return re.sub(
+        r"\((https://github\.com/[^\s()&]+)\)",
+        lambda match: f'(<a href="{match[1]}">{"commit" if "/commit/" in match[1] else "link"}</a>)',
+        escape(", ".join(entries)),
+    )
+
+
 def badges_of(
     stats: dict, scans: dict, warnings: dict, reports: dict | None = None, vt_reports: dict | None = None
 ) -> list[str]:
@@ -35,7 +44,7 @@ def badges_of(
         )
     if stats.get("ai"):
         items.append(
-            f"<li><span class=\"badge ai\">AI</span> Its repository has instructions for AI coding assistants, or its README says it's made with AI ({escape(', '.join(stats['ai']))}), so it's likely developed with AI help. That says nothing about its quality or safety.</li>"
+            f"<li><span class=\"badge ai\">AI</span> Its repository has instructions for AI coding assistants, or its README says it's made with AI ({ai_evidence(stats['ai'])}), so it's likely developed with AI help. That says nothing about its quality or safety.</li>"
         )
     for key, prefix in [
         *((key, "") for key in stats.get("warnings") or []),
@@ -87,8 +96,9 @@ def badges_of(
             f"; {name}: {flagged} of {total} engines flagged it"
             for name, flagged, total in external_results(channel, reports, vt_reports)
         )
+        caveat = "" if kind == "infected" else " A clean scan isn't proof of safety."
         items.append(
-            f'<li><span class="badge {css}">{escape(prefix + label)}</span> Virus scan of <code>{escape(channel.get("file", ""))}</code> ({escape(channel.get("tag", ""))}): {escape(results)}. A clean scan isn\'t proof of safety.</li>'
+            f'<li><span class="badge {css}">{escape(prefix + label)}</span> Virus scan of <code>{escape(channel.get("file", ""))}</code> ({escape(channel.get("tag", ""))}): {escape(results)}.{caveat}</li>'
         )
     return items
 

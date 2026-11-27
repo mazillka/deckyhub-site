@@ -126,10 +126,11 @@ function scanLine(document, scan) {
     results.push(`VirusTotal: ${scan.virusTotal[0]} of ${scan.virusTotal[1]} engines flagged it`);
   if (Array.isArray(scan.metaDefender))
     results.push(`MetaDefender: ${scan.metaDefender[0]} of ${scan.metaDefender[1]} engines flagged it`);
+  const caveat = scan.kind === "infected" ? "" : " A clean scan isn't proof of safety.";
   return textLine(
     document,
     translate(
-      `Virus scan of ${scan.tag || "the latest release"}: ${results.map((result) => translate(result)).join("; ")}. A clean scan isn't proof of safety.`,
+      `Virus scan of ${scan.tag || "the latest release"}: ${results.map((result) => translate(result)).join("; ")}.${caveat}`,
     ),
   );
 }

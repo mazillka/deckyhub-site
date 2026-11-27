@@ -233,8 +233,9 @@ const RULES = [
     (scanner, flagged, total) => `${scanner}: ${flagged} із ${total} рушіїв позначили його`,
   ],
   [
-    /^Virus scan of (.+?): (.+)\. A clean scan isn't proof of safety\.$/,
-    (tag, results) => `Перевірка на віруси ${ukrainian(tag)}: ${results}. Чиста перевірка не доводить безпеку.`,
+    /^Virus scan of (.+?): (.+?)\.( A clean scan isn't proof of safety\.)?$/,
+    (tag, results, caveat) =>
+      `Перевірка на віруси ${ukrainian(tag)}: ${results}.${caveat ? " Чиста перевірка не доводить безпеку." : ""}`,
   ],
   [
     /^(.+) has not checked for updates yet\. Open DeckyHub on it\.$/,

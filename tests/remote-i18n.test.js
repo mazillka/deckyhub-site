@@ -49,6 +49,10 @@ test("messages with a name or a number are translated too", () => {
     translate("Virus scan of v1.2: ClamAV: no threats found. A clean scan isn't proof of safety.", "uk"),
     "Перевірка на віруси v1.2: ClamAV: no threats found. Чиста перевірка не доводить безпеку.",
   );
+  assert.equal(
+    translate("Virus scan of v1.2: ClamAV: threat found.", "uk"),
+    "Перевірка на віруси v1.2: ClamAV: threat found.",
+  );
 });
 
 // Every sentence the page's scripts write must have a Ukrainian text, or the Ukrainian page shows English.

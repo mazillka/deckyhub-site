@@ -14,9 +14,9 @@ from scan_format import security_scans
 
 
 def whats_new(releases: list | None, repo_url: str) -> str:
-    """The newest stable release's notes (the newest pre-release's when there is no stable one), as a page section."""
-    notes_of = [item for item in releases or [] if plain_notes(item.get("body"))]
-    release = next((item for item in notes_of if not item.get("prerelease")), notes_of[0] if notes_of else None)
+    """The newest stable release's notes (the newest pre-release's when there is no stable one), as a page section.
+    A release without notes says so: an older release's notes would read as the newest one's."""
+    release = next((item for item in releases or [] if not item.get("prerelease")), releases[0] if releases else None)
     if not release or not release.get("tag_name"):
         return ""
     url = release.get("html_url") or ""
@@ -24,9 +24,15 @@ def whats_new(releases: list | None, repo_url: str) -> str:
         url = f"{repo_url}/releases"
     when = nice_date(release.get("published_at"))
     label = f"{release['tag_name']} (pre-release)" if release.get("prerelease") else release["tag_name"]
+    heading = f'<h2 id="whats-new">What&#8217;s new in {escape(label)}</h2>'
+    notes = plain_notes(release.get("body"))
+    if not notes:
+        return (
+            f"{heading}<p>This release{' of ' + when if when else ''} has no written notes. "
+            f'<a href="{escape(url)}">See it on GitHub</a>.</p>'
+        )
     return (
-        f'<h2 id="whats-new">What&#8217;s new in {escape(label)}</h2>'
-        f"<p>{escape(plain_notes(release.get('body')))}</p>"
+        f"{heading}<p>{escape(notes)}</p>"
         f'<p class="note">From the plugin author&#8217;s release notes{" of " + when if when else ""}. '
         f'<a href="{escape(url)}">Read them in full on GitHub</a>.</p>'
     )
