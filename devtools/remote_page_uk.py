@@ -126,6 +126,11 @@ PANEL = [
     (">Send install request<", ">Надіслати запит на встановлення<"),
     (">Cancel request<", ">Скасувати запит<"),
     (">Installed plugins<", ">Встановлені плагіни<"),
+    (">Notify me when a request finishes<", ">Сповіщати, коли запит завершиться<"),
+    (
+        "Works while this page or app is still open. It doesn't go through a server.",
+        "Працює, доки відкрита ця сторінка або застосунок. Сервер не використовується.",
+    ),
     (">Browse plugins to install<", ">Переглянути плагіни для встановлення<"),
     (">Refresh list<", ">Оновити список<"),
     (">Refresh<", ">Оновити<"),

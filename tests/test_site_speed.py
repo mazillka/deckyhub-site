@@ -45,7 +45,7 @@ class SiteSpeedTests(unittest.TestCase):
         self.assertEqual(scripts, 3)
         for name in imports:
             self.assertEqual(source.count(f'<link rel="modulepreload" href="/{name}">'), scripts, name)
-        self.assertEqual(len(imports), 10)
+        self.assertEqual(len(imports), 11)
 
     def test_the_installed_app_asks_the_server_before_using_a_cached_file(self):
         worker = (ROOT / "docs" / "remote-install" / "sw.js").read_text(encoding="utf-8")

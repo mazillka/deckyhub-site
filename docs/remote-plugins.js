@@ -179,6 +179,33 @@ export function readPack(text) {
   return { name: typeof data.name === "string" && data.name.trim() ? data.name.trim().slice(0, 60) : "Pack", repos };
 }
 
+// The device's setup as a pack DeckyHub can restore (the format of deckyhub-plugin's packs.py): the plugins it ties
+// to a repository, and by name the ones it can't. Null when there is nothing a pack could install.
+export function setupPack(installed) {
+  const plugins = [];
+  const manual = [];
+  const seen = new Set();
+  for (const plugin of installed) {
+    const name = String(plugin.name || "").slice(0, 100);
+    const repo = typeof plugin.repo === "string" ? plugin.repo : "";
+    if (!name || name.toLowerCase() === "deckyhub" || repo.toLowerCase() === "mazillka/deckyhub-plugin") continue;
+    const version = plugin.version && plugin.version !== "installed" ? { version: plugin.version.slice(0, 60) } : {};
+    if (plugin.identityUnverified === false && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+      if (seen.has(repo.toLowerCase())) continue;
+      seen.add(repo.toLowerCase());
+      plugins.push({ repo, name, ...version, ...(plugin.disabled ? { disabled: true } : {}) });
+    } else manual.push({ name, ...version });
+  }
+  if (!plugins.length) return null;
+  return {
+    schemaVersion: 1,
+    kind: "deckyhub-pack",
+    name: "My DeckyHub pack",
+    plugins,
+    ...(manual.length ? { manual } : {}),
+  };
+}
+
 // The pack's plugins that are installed on the device (never DeckyHub), and which of them are off or on.
 export function packTargets(pack, installed) {
   const repos = new Set(pack?.repos || []);
@@ -326,7 +353,7 @@ async function fetchInstalled(loadPage, isStale) {
   }
 }
 
-export function createPluginList(root, { loadPage, request }) {
+export function createPluginList(root, { loadPage, request, onPlugins = (_plugins) => {} }) {
   const list = root.querySelector("#remote-plugins");
   const status = root.querySelector("#remote-plugins-status");
   const refresh = root.querySelector("#remote-plugins-refresh");
@@ -445,7 +472,10 @@ export function createPluginList(root, { loadPage, request }) {
     status.textContent = translate("Loading installed plugins…");
     try {
       const plugins = await fetchInstalled(loadPage, () => current !== generation);
-      if (plugins) render(plugins);
+      if (plugins) {
+        render(plugins);
+        onPlugins(plugins);
+      }
     } catch (error) {
       if (current !== generation) return;
       clearList();

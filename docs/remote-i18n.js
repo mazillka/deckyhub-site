@@ -136,6 +136,8 @@ const UK = new Map(
     "Unable to load installed plugins.": "Не вдалося завантажити встановлені плагіни.",
     "Pair a device to see its installed plugins.": "Додайте пристрій, щоб побачити його встановлені плагіни.",
     "This is not a DeckyHub plugin pack.": "Це не пак плагінів DeckyHub.",
+    "Download plugin pack": "Завантажити пак плагінів",
+    "Check the request on DeckyHub: its outcome is not known.": "Перевірте запит у DeckyHub: його результат невідомий.",
     "This plugin pack has no plugins in it.": "У цьому паку немає плагінів.",
     "This file is too large to be a plugin pack.": "Цей файл завеликий для пака плагінів.",
     // what DeckyHub knows about a plugin

@@ -50,6 +50,8 @@ export function setupPairing(ctx) {
     const deviceName = byId('device-name').value.trim().slice(0, 64) || address;
     const nextFingerprint = isPin(approval.nextFingerprint) ? approval.nextFingerprint : undefined;
     const paired = { name: deviceName, address, fingerprint: pin, nextFingerprint, token: s.token, lastUsed: Date.now() };
+    const setup = s.devices.find(device => device.fingerprint === pin)?.setup;
+    if (setup) paired.setup = setup;
     s.devices = [...s.devices.filter(device => device.fingerprint !== pin), paired];
     s.endpoint = { url, hashes: pinnedHashes(paired) };
     ctx.saveDevices();
