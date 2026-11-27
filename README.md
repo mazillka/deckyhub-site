@@ -2,8 +2,6 @@
 
 [deckyhub.com](https://deckyhub.com/): the website of [DeckyHub](https://github.com/mazillka/deckyhub-plugin), a plugin store for [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader).
 
-> **Not live yet.** deckyhub.com is still deployed from `deckyhub-plugin`. See [MIGRATION.md](MIGRATION.md).
-
 ## Layout
 
 - `docs/` - the pages and the Remote Install web client (`remote-*.js`).
