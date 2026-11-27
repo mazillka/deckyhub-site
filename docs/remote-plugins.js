@@ -38,6 +38,11 @@ const SCAN_BADGES = {
   partial: ["Not fully scanned", "warn"],
 };
 
+// How many of the four scanners reported finding nothing, as the app counts it.
+const scanPassed = (scan) =>
+  [scan.clamav, scan.yara].filter((result) => result === "clean").length +
+  [scan.virusTotal, scan.metaDefender].filter((counts) => Array.isArray(counts) && !counts[0]).length;
+
 function warningBadges(document, record, labels) {
   const found = [];
   if (record.root)
@@ -71,7 +76,8 @@ function noteBadges(document, record) {
 
 function scanBadge(document, scan) {
   const [text, kind] = SCAN_BADGES[scan.kind] || ["Scanned", "warn"];
-  return badge(document, (scan.prerelease ? "Pre-release: " : "") + text, kind);
+  const count = scan.kind === "partial" ? ` · ${scanPassed(scan)}/4` : "";
+  return badge(document, (scan.prerelease ? "Pre-release: " : "") + text + count, kind);
 }
 
 const validCount = (value) => Number.isSafeInteger(value) && value >= 0;

@@ -179,6 +179,7 @@ const RULES = [
     (message, detail) => `${ukrainian(message)} (${detail})`,
   ],
   [/^Pre-release: (.+)$/, (rest) => `Попередній випуск: ${ukrainian(rest)}`],
+  [/^Not fully scanned · (\d\/4)$/, (count) => `${ukrainian("Not fully scanned")} · ${count}`],
   [/^(.+) selected\.$/, (name) => `${name} вибрано.`],
   [
     /^(.+) forgotten in this browser\. Remove this browser under Paired browsers in DeckyHub on the device too\.$/,

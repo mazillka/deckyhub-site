@@ -18,6 +18,7 @@ EXTRA_STYLE = """
 .app[hidden]{display:none}
 .catalog{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 .filters{display:grid;gap:12px;margin:18px 0 8px}.filters input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:1rem}
+@media(max-height:600px){.crumbs{margin-top:10px}.lead{font-size:1rem;margin-bottom:8px}.plugin>h1{margin:4px 0}.filters{margin:8px 0}.filters input{padding:8px 14px}.filters details.more>summary{padding:8px 0;min-height:28px}}
 .filters details.more{margin:0}.filters .chips{margin-bottom:12px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chips button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:.9rem;cursor:pointer}
 .chips button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -26,7 +27,7 @@ EXTRA_STYLE = """
 .lead{font-size:1.15rem;color:var(--muted);margin:0 0 18px}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:0;padding:0;list-style:none}
 .facts li{min-width:0;overflow-wrap:anywhere;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--muted);font-size:.9rem}.facts li.wide{grid-column:1/-1}.facts strong{display:block;color:var(--text);font-size:1.05rem}
-.badges{display:grid;gap:8px;margin:0;padding:0;list-style:none}.badges li{color:var(--muted)}
+.badges{display:grid;gap:8px;margin:0;padding:0;list-style:none}.badges li{color:var(--muted)}.badges .badge{white-space:normal}
 .badge{padding:1px 8px;border-radius:999px;border:1px solid currentColor;font-size:.8rem;white-space:nowrap;margin-right:6px}.badge.store{color:#7cc4ff}
 .root{color:#ffb35c}.stale{color:#ff8a8a}.warn{color:var(--warn)}.fork{color:var(--muted)}.clean{color:#6bcb6b}.ai{color:#c49bff}.rust{color:#ffb08a}
 .btn{display:inline-block;padding:11px 18px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;margin:4px 8px 4px 0;cursor:pointer;font-family:inherit;font-size:inherit}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}

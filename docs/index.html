@@ -86,7 +86,9 @@ footer .wrap{display:grid;gap:10px}
 </div>
 <p class="latest"><!-- latest --></p>
 <div class="badges" aria-label="Downloads, plugins and license"><a href="https://github.com/mazillka/deckyhub-plugin/releases"><img src="https://img.shields.io/github/downloads/mazillka/deckyhub-plugin/total?color=1d75cc" alt="Total downloads of DeckyHub" width="104" height="20" loading="lazy"></a><a href="https://deckyhub.com/plugins/"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmazillka%2Fdeckyhub-registry%2Frefs%2Fheads%2Fmain%2Fregistry%2Fapps.json&amp;query=%24.apps.length&amp;label=plugins%20in%20registry&amp;color=1d75cc" alt="Number of plugins in DeckyHub's registry" width="140" height="20" loading="lazy"></a><a href="https://github.com/mazillka/deckyhub-plugin/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-1d75cc" alt="License: GPL-3.0-or-later" width="148" height="20" loading="lazy"></a></div>
-<div class="hero-shot"><picture><source media="(prefers-reduced-motion: reduce)" srcset="img/discover-640.webp 640w, img/discover.webp 1280w" sizes="(max-width:940px) 100vw, 900px"><source type="image/webp" srcset="img/deckyhub.webp"><img src="img/deckyhub.gif" width="800" height="500" style="width:100%" fetchpriority="high" alt="DeckyHub in action: its Quick Access tab, Discover, a plugin's details, Updates and Settings"></picture></div>
+<div class="hero-shot"><img id="tour" src="img/discover.webp" srcset="img/discover-640.webp 640w, img/discover.webp 1280w" sizes="(max-width:940px) 100vw, 900px" width="1280" height="800" style="display:block;width:100%;height:auto" fetchpriority="high" alt="DeckyHub in action: its Quick Access tab, Discover, a plugin's details, Updates and Settings"></div>
+<p><button type="button" class="btn ghost" id="tour-play" data-play="img/deckyhub.webp" data-stop="Stop the walkthrough" aria-controls="tour" hidden style="font:inherit;cursor:pointer;margin-top:14px">Play the walkthrough</button></p>
+<script>(function(){var i=document.getElementById("tour"),b=document.getElementById("tour-play"),still=i.src,set=i.srcset,label=b.textContent,on=false;b.hidden=false;b.addEventListener("click",function(){on=!on;i.srcset=on?"":set;i.src=on?b.dataset.play:still;b.textContent=on?b.dataset.stop:label})})()</script>
 </div></header>
 
 <section id="features"><div class="wrap">
@@ -159,8 +161,8 @@ footer .wrap{display:grid;gap:10px}
 <h2>See the scan results on GitHub</h2>
 <p>Deckyhub is a free browser extension. It adds safety badges to a plugin's GitHub page and, under every release, the audit warnings and ClamAV, YARA, VirusTotal and MetaDefender results, with a link that opens that exact version here. It only reads public registry files and collects nothing.</p>
 <p>Works in Chrome, Edge, Opera, Brave, Vivaldi and Firefox.</p>
-<div class="cta"><a class="btn" href="https://github.com/mazillka/deckyhub-ext/releases">Get it from GitHub releases</a><a class="btn ghost" href="https://github.com/mazillka/deckyhub-ext#readme">Read the README</a><a class="btn ghost" href="/help.html#extension">More in the help</a></div>
-<p class="soon">Store listings are coming soon. Until then, install it from GitHub; the source is open (GPL-3.0-or-later).</p></div>
+<div class="cta"><a class="btn" href="https://chromewebstore.google.com/detail/aiibhedbgiineocopdokapoaedeedhkc">Chrome Web Store</a><a class="btn" href="https://addons.mozilla.org/firefox/addon/deckyhub/">Firefox Add-ons</a><a class="btn ghost" href="https://github.com/mazillka/deckyhub-ext/releases">Get it from GitHub releases</a><a class="btn ghost" href="https://github.com/mazillka/deckyhub-ext#readme">Read the README</a><a class="btn ghost" href="/help.html#extension">More in the help</a></div>
+<p class="soon">For other browsers, install it from GitHub; the source is open (GPL-3.0-or-later).</p></div>
 <figure><div class="shot"><img src="img/extension.webp" srcset="img/extension-640.webp 640w, img/extension.webp 1280w" sizes="(max-width:860px) 100vw, 560px" width="1280" height="800" loading="lazy" alt="A GitHub release page with the Deckyhub block under it: ClamAV and YARA show no threats found, VirusTotal and MetaDefender show not scanned yet, with buttons to View on DeckyHub and Send to device."></div></figure>
 </div></div></section>
 

@@ -5,9 +5,17 @@ from html import escape
 
 from page_text import compact
 from plugin_data import store_activity, valid_count
-from scan_format import SCAN_LABELS, SCAN_RESULTS, external_results, scan_kind, source_mismatch
+from scan_format import (
+    SCAN_LABELS,
+    SCAN_RESULTS,
+    SCANNERS,
+    external_results,
+    scan_kind,
+    scan_passed,
+    source_mismatch,
+)
 
-NOT_REVIEWED = "DeckyHub is not the Decky store and nobody reviews these plugins, DeckyHub included. A clean scan only means no known malware was found."
+NOT_REVIEWED = "DeckyHub is not the Decky store and doesn't review these plugins. A clean scan only means no known malware was found."
 
 
 def ai_evidence(entries: list[str]) -> str:
@@ -22,28 +30,29 @@ def ai_evidence(entries: list[str]) -> str:
 def badges_of(
     stats: dict, scans: dict, warnings: dict, reports: dict | None = None, vt_reports: dict | None = None
 ) -> list[str]:
-    items = []
+    # Listed as: scan results, audit warnings, root, then the background facts (store, fork, Rust, AI).
+    scanned, audit, root, background = [], [], [], []
     if stats.get("root"):
-        items.append(
+        root.append(
             '<li><span class="badge root">Runs as root</span> Its plugin.json asks Decky Loader to run its backend as root, with full access to the device. Many plugins need that for real reasons; install it only if you trust the author.</li>'
         )
     if stats.get("fork"):
-        items.append(
+        background.append(
             f'<li><span class="badge fork">Fork</span> A fork of <a href="https://github.com/{escape(stats["fork"])}">{escape(stats["fork"].split("/")[1])}</a> by <a href="https://github.com/{escape(stats["fork"].split("/")[0])}">{escape(stats["fork"].split("/")[0])}</a>: its code started as a copy of that project.</li>'
         )
     if stats.get("store") and store_activity(stats) is not None:
         activity = (stats.get("store") or {}).get("activity") or {}
         has_activity = valid_count(activity.get("downloads")) and valid_count(activity.get("updates"))
         metric = "downloads + updates" if has_activity else "downloads"
-        items.append(
+        background.append(
             f'<li><span class="badge store">In Decky store</span> The <a href="https://plugins.deckbrew.xyz/plugins">Decky store</a> lists a plugin with this name ({compact(store_activity(stats))} {metric}). The store matches by name, so check that it is this repository. These counts include repeat activity and are not unique installs. The store is where Decky installs it from; DeckyHub installs from GitHub.</li>'
         )
     if stats.get("rust"):
-        items.append(
+        background.append(
             '<li><span class="badge rust">Rust</span> Its repository has Rust code, so part of the plugin is written in Rust. That says nothing about its quality or safety.</li>'
         )
     if stats.get("ai"):
-        items.append(
+        background.append(
             f"<li><span class=\"badge ai\">AI</span> Its repository has instructions for AI coding assistants, or its README says it's made with AI ({ai_evidence(stats['ai'])}), so it's likely developed with AI help. That says nothing about its quality or safety.</li>"
         )
     for key, prefix in [
@@ -56,7 +65,7 @@ def badges_of(
     ]:
         if key in warnings:
             label, hint = warnings[key]
-            items.append(
+            audit.append(
                 f'<li><span class="badge {"stale" if key in ("blocked", "not-in-source") else "warn"}">{escape(prefix + label)}</span> {escape(hint)} (from <a href="https://decky-extended-plugins.beallio.com/audit">Decky Extended Plugins\' audit</a>)</li>'
             )
     for channel, channel_name, prefix in (
@@ -77,7 +86,7 @@ def badges_of(
                 ),
             )
             release_identity = f"{channel_name} ZIP {channel['file']} ({channel['tag']})"
-            items.append(
+            audit.append(
                 f'<li><span class="badge stale">{escape(prefix + label)}</span> {escape(hint)} Applies to {escape(release_identity)}.</li>'
             )
         if not channel.get("clamav"):
@@ -97,10 +106,16 @@ def badges_of(
             for name, flagged, total in external_results(channel, reports, vt_reports)
         )
         caveat = "" if kind == "infected" else " A clean scan isn't proof of safety."
-        items.append(
+        if kind == "partial":
+            passed = scan_passed(channel, reports, vt_reports)
+            label = f"{label} · {passed}/{SCANNERS}"
+            results += f". {passed} of {SCANNERS} scanners have reported finding nothing"
+        scanned.append(
             f'<li><span class="badge {css}">{escape(prefix + label)}</span> Virus scan of <code>{escape(channel.get("file", ""))}</code> ({escape(channel.get("tag", ""))}): {escape(results)}.{caveat}</li>'
         )
-    return items
+    order = ("Fork", "In Decky store", "Rust", "AI")
+    background.sort(key=lambda item: next(i for i, label in enumerate(order) if f">{label}</span>" in item))
+    return scanned + audit + root + background
 
 
 BADGE_LABEL = re.compile(r'<span class="badge ([a-z ]+)">([^<]+)</span>')
@@ -152,7 +167,7 @@ def flags_of(
             {
                 "clean": '<span class="flag-ok">✓ Scanned</span>',
                 "infected": '<span class="flag-bad">✖ Threat found</span>',
-                "partial": '<span class="flag-warn">⚠ Not fully scanned</span>',
+                "partial": f'<span class="flag-warn">⚠ Not fully scanned · {scan_passed(channel, reports, vt_reports)}/{SCANNERS}</span>',
             }[kind]
         )
     return "".join(flags)

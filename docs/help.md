@@ -125,7 +125,7 @@ A free extension for Chrome, Edge, Opera, Brave, Vivaldi and Firefox that shows 
 
 ### How do I install the extension?
 
-It isn't listed in the Chrome, Edge or Firefox stores yet. Download the latest build for your browser from its [GitHub releases](https://github.com/mazillka/deckyhub-ext/releases) and follow the steps in its [README](https://github.com/mazillka/deckyhub-ext#readme). The [source](https://github.com/mazillka/deckyhub-ext) is open under GPL-3.0-or-later.
+Chrome, Brave and Vivaldi: from the [Chrome Web Store](https://chromewebstore.google.com/detail/aiibhedbgiineocopdokapoaedeedhkc). Firefox: from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/deckyhub/). For other browsers, download the latest build from its [GitHub releases](https://github.com/mazillka/deckyhub-ext/releases) and follow the steps in its [README](https://github.com/mazillka/deckyhub-ext#readme). The [source](https://github.com/mazillka/deckyhub-ext) is open under GPL-3.0-or-later.
 
 ### Does the extension collect any data?
 

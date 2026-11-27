@@ -98,6 +98,42 @@ class PluginPageTests(unittest.TestCase):
         self.assertIn('Claude (<a href="https://github.com/a/b/commit/abc">commit</a>)', badge)
         self.assertIn("&lt;AI&gt; (https://evil.example)", badge)
 
+    def test_a_store_only_page_is_described_as_installed_from_the_decky_store(self):
+        shell = plugin_pages.shell_of((ROOT / "docs" / "releases.html").read_text(encoding="utf-8"))
+        for description in ("Does a thing.", ""):
+            app = {**APP, "store": True, "description": description}
+            page = plugin_pages.plugin_page(shell, app, {}, {}, {}, [app])
+            summary = re.search('<meta name="description" content="(.*?)">', page)[1]
+            self.assertIn("from the Decky store", summary)
+            self.assertNotIn("DeckyHub", summary)
+
+    def test_related_links_follow_the_plugin_so_they_spread_over_the_category(self):
+        shell = plugin_pages.shell_of((ROOT / "docs" / "releases.html").read_text(encoding="utf-8"))
+        apps = [{**APP, "id": f"p{n}", "name": f"P{n}", "repo": f"o{n}/r"} for n in range(10)]
+        linked = []
+        for app in apps:
+            page = plugin_pages.plugin_page(shell, app, {}, {}, {}, apps)
+            found = re.findall(r'<li><a href="/plugins/(p\d)\.html">', page)
+            self.assertEqual(len(found), 6)
+            self.assertNotIn(app["id"], found)
+            linked += found
+        self.assertEqual({linked.count(app["id"]) for app in apps}, {6})
+
+    def test_findings_come_before_background_facts_and_a_partial_scan_says_how_far_it_got(self):
+        scans = {"stable": {"file": "a.zip", "tag": "v1", "clamav": {"result": "clean"}, "yara": {"result": "clean"}}}
+        stats = {"ai": ["CLAUDE.md"], "rust": True, "root": True, "warnings": ["obfuscated"]}
+        badges = plugin_pages.badges_of(stats, scans, plugin_pages.WARNINGS)
+        labels = [plugin_pages.BADGE_LABEL.search(item)[2] for item in badges]
+        self.assertEqual(labels, ["Not fully scanned · 2/4", "Hidden code", "Runs as root", "Rust", "AI"])
+        self.assertIn("2 of 4 scanners have reported finding nothing", badges[0])
+
+    def test_a_number_is_not_shown_twice(self):
+        page = self.page({"downloads": 1500})
+        self.assertNotIn("Approximate activity (", page)
+        self.assertIn("GitHub downloads (repeat downloads included; not unique installs)", page)
+        both = self.page({"downloads": 1500, "store": {"downloads": 40000}})
+        self.assertIn("<strong>41.5K</strong>Approximate activity", both)
+
     def test_a_store_only_page_shows_no_release_notes(self):
         shell = plugin_pages.shell_of((ROOT / "docs" / "releases.html").read_text(encoding="utf-8"))
         release = {"tag_name": "v1", "prerelease": False, "body": "Old build notes."}
@@ -320,7 +356,7 @@ class PluginPageTests(unittest.TestCase):
 
     def test_a_store_only_entry_says_so_and_offers_no_github_install_or_device_request(self):
         page = self.page()
-        self.assertIn("nobody reviews these plugins", page)
+        self.assertIn("doesn't review these plugins", page)
         self.assertIn("Send to device", page)
         shell = plugin_pages.shell_of((ROOT / "docs" / "releases.html").read_text(encoding="utf-8"))
         store_only = {**APP, "store": True}

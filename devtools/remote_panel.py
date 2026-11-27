@@ -163,12 +163,15 @@ def remote_install_picker(plugin_id: str, safety: list[str] | None = None) -> st
 </dialog>"""
 
 
+PAIRED_DESCRIPTION = "Pair a browser with your device to install, update and remove its Decky plugins over your own network. Experimental, in DeckyHub."
+
+
 def paired_devices_page(
     shell: dict[str, str],
     title: str = "Paired devices | DeckyHub",
-    description: str = "Pair a device and manage its installed Decky plugins.",
+    description: str = PAIRED_DESCRIPTION,
     lang: str = "en",
-    path: str = "remote-install/",
+    path: str = "paired-devices/",
 ) -> str:
     uk = lang == "uk"
     body = f"<h1>{'Сполучені пристрої' if uk else 'Paired devices'}</h1>" + remote_device_panel(lang)
