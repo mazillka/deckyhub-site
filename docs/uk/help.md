@@ -125,7 +125,7 @@ Steam Deck або інший пристрій на SteamOS із Decky Loader 3.x
 
 ### Як встановити розширення?
 
-У магазинах Chrome, Edge і Firefox його ще немає. Завантажте останню збірку для свого браузера зі [сторінки випусків на GitHub](https://github.com/mazillka/deckyhub-ext/releases) і виконайте кроки з [README](https://github.com/mazillka/deckyhub-ext#readme). [Код](https://github.com/mazillka/deckyhub-ext) відкритий за ліцензією GPL-3.0-or-later.
+Chrome, Brave і Vivaldi: із [Chrome Web Store](https://chromewebstore.google.com/detail/aiibhedbgiineocopdokapoaedeedhkc). Firefox: із [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/deckyhub/). Для інших браузерів завантажте останню збірку зі [сторінки випусків на GitHub](https://github.com/mazillka/deckyhub-ext/releases) і виконайте кроки з [README](https://github.com/mazillka/deckyhub-ext#readme). [Код](https://github.com/mazillka/deckyhub-ext) відкритий за ліцензією GPL-3.0-or-later.
 
 ### Чи збирає розширення якісь дані?
 

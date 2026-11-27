@@ -93,6 +93,11 @@ def scan_results(channel: dict, reports: dict | None = None, vt_reports: dict | 
     ]
 
 
+def scan_passed(channel: dict, reports: dict | None = None, vt_reports: dict | None = None) -> int:
+    """How many scanners reported finding nothing: the "3/4" the app shows beside Not fully scanned."""
+    return scan_results(channel, reports, vt_reports).count("clean")
+
+
 def scan_state(channel: dict, reports: dict | None = None, vt_reports: dict | None = None) -> str:
     """What the scanners that reported said: infected if any flagged it, partial if one couldn't finish, else clean,
     however many have reported. The Known issues page lists these problems; a scan still waiting on VirusTotal or

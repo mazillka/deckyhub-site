@@ -14,9 +14,9 @@ from scan_format import security_scans
 
 
 def whats_new(releases: list | None, repo_url: str) -> str:
-    """The newest stable release's notes (the newest pre-release's when there is no stable one), as a page section."""
-    notes_of = [item for item in releases or [] if plain_notes(item.get("body"))]
-    release = next((item for item in notes_of if not item.get("prerelease")), notes_of[0] if notes_of else None)
+    """The newest stable release's notes (the newest pre-release's when there is no stable one), as a page section.
+    A release without notes says so: an older release's notes would read as the newest one's."""
+    release = next((item for item in releases or [] if not item.get("prerelease")), releases[0] if releases else None)
     if not release or not release.get("tag_name"):
         return ""
     url = release.get("html_url") or ""
@@ -24,9 +24,15 @@ def whats_new(releases: list | None, repo_url: str) -> str:
         url = f"{repo_url}/releases"
     when = nice_date(release.get("published_at"))
     label = f"{release['tag_name']} (pre-release)" if release.get("prerelease") else release["tag_name"]
+    heading = f'<h2 id="whats-new">What&#8217;s new in {escape(label)}</h2>'
+    notes = plain_notes(release.get("body"))
+    if not notes:
+        return (
+            f"{heading}<p>This release{' of ' + when if when else ''} has no written notes. "
+            f'<a href="{escape(url)}">See it on GitHub</a>.</p>'
+        )
     return (
-        f'<h2 id="whats-new">What&#8217;s new in {escape(label)}</h2>'
-        f"<p>{escape(plain_notes(release.get('body')))}</p>"
+        f"{heading}<p>{escape(notes)}</p>"
         f'<p class="note">From the plugin author&#8217;s release notes{" of " + when if when else ""}. '
         f'<a href="{escape(url)}">Read them in full on GitHub</a>.</p>'
     )
@@ -82,22 +88,29 @@ def plugin_page(
     store_count = store_activity(stats)
     github_count = stats.get("downloads")
     github_count = github_count if valid_count(github_count) else None
-    if total is not None:
+    combined = bool(github_count and store_count)
+    caveat = "" if combined else " (repeat downloads included; not unique installs)"
+    if total is not None and combined:
         facts.append(
             f"<li><strong>{compact(total)}</strong>Approximate activity (repeat downloads included; not unique installs)</li>"
         )
     if github_count is not None:
-        facts.append(f"<li><strong>{compact(github_count)}</strong>GitHub downloads</li>")
+        facts.append(
+            f"<li><strong>{compact(github_count)}</strong>GitHub downloads{caveat if github_count else ''}</li>"
+        )
     if store_count is not None:
         activity = (stats.get("store") or {}).get("activity")
         label = "Decky store downloads + updates" if activity else "Decky store downloads"
         facts.append(
-            f'<li><strong>{compact(store_count)}</strong><a href="https://plugins.deckbrew.xyz/plugins">{label}</a> (matched by name)</li>'
+            f'<li><strong>{compact(store_count)}</strong><a href="https://plugins.deckbrew.xyz/plugins">{label}</a> (matched by name){caveat if store_count else ""}</li>'
         )
     if stats.get("stars") is not None:
         facts.append(f"<li><strong>{compact(stats['stars'])}</strong>GitHub stars</li>")
     if stats.get("updated"):
         facts.append(f"<li><strong>{nice_date(stats['updated'])}</strong>Latest release</li>")
+    stable = next((item for item in releases or [] if not item.get("prerelease")), None)
+    if stable and stable.get("tag_name") and not app.get("store"):
+        facts.append(f"<li><strong>{escape(stable['tag_name'])}</strong>Latest stable version</li>")
     # A plugin only in the Decky store has no release worth judging in its repository (what is left there is an old
     # build): its scans, audit warnings and root flag would describe something nobody installs, so none are shown.
     if app.get("store"):
@@ -121,16 +134,16 @@ def plugin_page(
         )
     # A pre-release scanned beside the stable one: say what a pre-release is.
     if not app.get("store") and scans.get("prerelease") and not prerelease_only(releases or []):
-        badges.insert(
-            0,
-            '<li><span class="badge warn">Pre-release</span> A pre-release of this plugin is scanned too. It may be unfinished or buggy, and DeckyHub installs it only if you choose its Pre-release channel.</li>',
+        badges.append(
+            '<li><span class="badge warn">Pre-release</span> A pre-release of this plugin is scanned too. It may be unfinished or buggy, and DeckyHub installs it only if you choose its Pre-release channel.</li>'
         )
     if not description.strip():
         badges.insert(
             0,
             '<li><span class="badge warn">No description</span> Its author hasn\'t said what it does. Check its repository before installing.</li>',
         )
-    related = [other for other in others if other["id"] != app["id"]][:6]
+    at = next((index for index, other in enumerate(others) if other["id"] == app["id"]), -1)
+    related = [other for other in others[at + 1 :] + others[: max(at, 0)] if other["id"] != app["id"]][:6]
     mine = [other for other in same_author or [] if other["id"] != app["id"]][:8]
     crumbs = (
         f'<p class="crumbs"><a href="/">DeckyHub</a> › <a href="/plugins/">Plugins</a> › '
@@ -152,8 +165,7 @@ def plugin_page(
     body = f"""{crumbs}
 <h1>{escape(shown)}</h1>
 <p class="lead">{escape(description)}</p>
-{STORE_ONLY_NOTE if app.get("store") else ""}<p class="cta"><a class="btn" href="#how-to-install">{"Install from the Decky store" if app.get("store") else "Install with DeckyHub"}</a><a class="btn ghost" href="{escape(repo_url)}">Source on GitHub</a><a class="btn ghost" href="https://www.youtube.com/results?search_query={quote(name + " Decky", safe="")}">Search YouTube</a>{"" if app.get("store") else '<button type="button" class="btn ghost" id="remote-open" aria-haspopup="dialog">Send to device (experimental)</button>'}</p>
-<ul class="facts">{"".join(facts)}<li class="wide"><strong><a href="{escape(repo_url)}">{escape(repo)}</a></strong>Repository</li></ul>
+{STORE_ONLY_NOTE if app.get("store") else ""}<p class="cta"><a class="btn" href="#how-to-install">{"Install from the Decky store" if app.get("store") else "Install with DeckyHub"}</a><a class="btn ghost" href="{escape(repo_url)}">Source on GitHub</a>{"" if app.get("store") else '<button type="button" class="btn ghost" id="remote-open" aria-haspopup="dialog">Send to device (experimental)</button>'}</p>
 <h2 id="safety">Safety at a glance</h2>
 {safety_chips(badges)}
 <p class="note">{NOT_REVIEWED}</p>
@@ -161,6 +173,8 @@ def plugin_page(
 {"<ul class='badges'>" + "".join(badges) + "</ul>" if badges else "<p>No labels: it doesn't run as root, and no audit warnings or virus scan findings are known for it.</p>"}
 <p class="note">Browsing this plugin on GitHub? The free <a href="https://github.com/mazillka/deckyhub-ext">Deckyhub browser extension</a> shows these labels and scans there.</p>
 </details>
+<ul class="facts">{"".join(facts)}<li class="wide"><strong><a href="{escape(repo_url)}">{escape(repo)}</a></strong>Repository</li></ul>
+<p class="note"><a href="https://www.youtube.com/results?search_query={quote(name + " Decky", safe="")}">Search YouTube</a> for videos about it (what the search finds isn't checked).</p>
 {"" if app.get("store") else whats_new(releases, repo_url)}
 <h2 id="how-to-install">How to install</h2>
 <ol class="steps">
@@ -181,6 +195,8 @@ def plugin_page(
         "operatingSystem": "SteamOS",
         "sameAs": [repo_url],
         "isAccessibleForFree": True,
+        # No @type: a GitHub account may be a person or an organization.
+        "author": {"name": owner, "url": f"https://github.com/{owner}"},
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
     }
     if total_downloads(stats) is not None:
@@ -204,14 +220,23 @@ def plugin_page(
     )
     # Search results show about 60 characters of a title and 155 of a description.
     title = f"{shown}: Decky Loader plugin | DeckyHub"
-    if len(title) > 70:
+    if len(title) > 60:
         title = f"{fit(shown, 40)} | DeckyHub"
-    tail = " A Decky Loader plugin; install it from Gaming Mode with DeckyHub."
+    tail = (
+        " A Decky Loader plugin; install it from the Decky store."
+        if store_only
+        else " A Decky Loader plugin; install it from Gaming Mode with DeckyHub."
+    )
     cut = fit(description.rstrip("."), 155 - len(tail))
     summary = (
         cut + ("" if cut.endswith("…") else ".") + tail
         if description
-        else f"{name}, a {category} Decky Loader plugin. Install and update it from Gaming Mode with DeckyHub."
+        else f"{name}, a {category} Decky Loader plugin."
+        + (
+            " Install it from the Decky store."
+            if store_only
+            else " Install and update it from Gaming Mode with DeckyHub."
+        )
     )
     summary = fit(summary, 160)
     return page(shell, PageSpec(title, summary, f"plugins/{app['id']}.html", body, [trail, json_ld(data)]))

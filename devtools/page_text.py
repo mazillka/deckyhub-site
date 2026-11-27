@@ -41,18 +41,30 @@ def owner_of(app: dict) -> str:
     return app["repo"].split("/")[0]
 
 
+# GitHub's "Full Changelog: <link>" line, which says nothing once the link is gone. A line with other words stays.
+CHANGELOG_LINE = re.compile(
+    r"^[\s#>*_\-\[]*full[ -]changelog[*_\]]*[ \t]*:?[*_]*[ \t]*(?:\[[^\]\n]*\]\([^)\n]*\)|\(?https?://\S+)?[ \t\r]*$",
+    re.I | re.M,
+)
+
+
 def plain_notes(body: str | None, limit: int = 600) -> str:
     """A release's notes as plain text: code blocks, images, links' addresses, HTML and markdown marks removed, and
     cut at a word boundary. The text is the plugin author's own, so it is only ever escaped, never trusted."""
     text = re.sub(r"```.*?```", " ", body or "", flags=re.S)
     text = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", text)
+    text = CHANGELOG_LINE.sub(" ", text)
+    # GitHub's generated "by @someone in <pull request address>": the "in" goes with the address.
+    text = re.sub(r"[ \t]+in https://github\.com/\S+/pull/\d+", "", text)
     text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
     text = re.sub(r"<(script|style)\b.*?</\1>", " ", text, flags=re.S | re.I)
     text = re.sub(r"<[^>]+>|https?://\S+", " ", text)
     text = re.sub(r"^\s{0,3}#{1,6}\s*", "", text, flags=re.M)
     text = re.sub(r"[*`]", "", text)
     text = re.sub(r"[>|]|^\s*[-+]\s+", " ", text, flags=re.M)
-    return fit(re.sub(r"\s+", " ", text).strip(), limit)
+    text = re.sub(r"\s+", " ", text).strip()
+    # GitHub's generated heading with nothing left under it.
+    return "" if re.fullmatch(r"What[\u2019']s Changed:?", text) else fit(text, limit)
 
 
 def inline_markdown(text: str) -> str:

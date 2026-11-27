@@ -378,12 +378,16 @@ press_page = plugin_pages.page(
 
 (out / "sitemap.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    f"<url><loc>{SITE}</loc><lastmod>{today}</lastmod></url>\n"
-    f"<url><loc>{SITE}uk/</loc><lastmod>{today}</lastmod></url>\n"
+    # No lastmod where the build doesn't know when the content changed: the build's own date would not be that.
+    f"<url><loc>{SITE}</loc></url>\n"
+    f"<url><loc>{SITE}uk/</loc></url>\n"
     f"<url><loc>{SITE}releases.html</loc><lastmod>{newest}</lastmod></url>\n"
     f"<url><loc>{SITE}press</loc><lastmod>{media_coverage.newest_date(coverage) or today}</lastmod></url>\n"
-    + "".join(f"<url><loc>{SITE}{path}</loc><lastmod>{today}</lastmod></url>\n" for path in HELP_ABOUT + CONTRIBUTE)
-    + "".join(f"<url><loc>{escape(url)}</loc><lastmod>{date}</lastmod></url>\n" for url, date in plugin_urls)
+    + "".join(f"<url><loc>{SITE}{path}</loc></url>\n" for path in HELP_ABOUT + CONTRIBUTE)
+    + "".join(
+        f"<url><loc>{escape(url)}</loc>" + (f"<lastmod>{date}</lastmod>" if date else "") + "</url>\n"
+        for url, date in plugin_urls
+    )
     + "</urlset>\n",
     encoding="utf-8",
 )
@@ -396,7 +400,11 @@ for shot in (ROOT / "screenshots").glob("*.jpg"):
     image.resize((640, round(image.height * 640 / image.width)), Image.LANCZOS).save(
         img / f"{shot.stem}-640.webp", quality=78, method=6
     )
-# The walkthrough GIF tops the page (with the Discover screenshot for reduced motion).
+# Icons that browsers and crawlers ask for at these addresses without being told to.
+with Image.open(ROOT / "docs" / "icon-512.png") as icon:
+    icon.resize((180, 180), Image.LANCZOS).save(out / "apple-touch-icon.png")
+    icon.save(out / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+# The walkthrough: the home page plays it when asked.
 shutil.copy(ROOT / "promo" / "deckyhub.gif", img / "deckyhub.gif")
 # The same walkthrough as animated WebP, about a third of the GIF's size; browsers without WebP keep the GIF.
 with Image.open(ROOT / "promo" / "deckyhub.gif") as gif:
@@ -404,9 +412,11 @@ with Image.open(ROOT / "promo" / "deckyhub.gif") as gif:
     gif.save(img / "deckyhub.webp", save_all=True, duration=durations, loop=0, quality=75, method=4)
 
 # Pages without their own structured data get a WebPage with its breadcrumb, from what the page shows.
-for path in ["releases.html", "about.html", "uk/about.html"] + [
-    p + ("index.html" if p.endswith("/") else "") for p in CONTRIBUTE
-]:
+for path in (
+    ["releases.html"]
+    + [p + n for p in ("", "uk/") for n in ("about.html", "guide.html", "authors.html")]
+    + [p + ("index.html" if p.endswith("/") else "") for p in CONTRIBUTE]
+):
     page_file = out / path
     text = page_file.read_text(encoding="utf-8")
     if "application/ld+json" in text:
