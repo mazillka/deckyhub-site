@@ -1,6 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { packTargets, readPack } from '../docs/remote-plugins.js';
+import { packTargets, readPack, setupPack } from '../docs/remote-plugins.js';
+
+test('a device list becomes a pack: identified plugins by repository, the rest by name, never DeckyHub', () => {
+  const row = (name, repo, extra = {}) => ({ name, repo, version: '1.0', identityUnverified: false, disabled: false, ...extra });
+  const pack = setupPack([
+    row('One', 'a/b', { disabled: true }),
+    row('Again', 'A/B'),
+    row('Two', 'c/d', { version: 'installed' }),
+    row('Mystery', null, { identityUnverified: true }),
+    row('DeckyHub', 'mazillka/deckyhub-plugin'),
+  ]);
+  assert.deepEqual(pack.plugins, [{ repo: 'a/b', name: 'One', version: '1.0', disabled: true }, { repo: 'c/d', name: 'Two' }]);
+  assert.deepEqual(pack.manual, [{ name: 'Mystery', version: '1.0' }]);
+  assert.deepEqual(readPack(JSON.stringify(pack)).repos, ['a/b', 'c/d']);
+});
+
+test('a list with nothing a pack could install makes no pack', () => {
+  assert.equal(setupPack([{ name: 'DeckyHub', repo: 'mazillka/deckyhub-plugin', identityUnverified: false }]), null);
+});
 
 test('a pack file is read into lower-case repositories, once each', () => {
   const pack = readPack(JSON.stringify({ name: ' Fun ', plugins: [{ repo: 'A/B' }, { repo: 'a/b' }, { repo: 'bad' }, { repo: 'c/d' }, {}] }));

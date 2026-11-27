@@ -17,6 +17,7 @@ def remote_device_panel(lang: str = "en") -> str:
 <h2 id="remote-title">Manage your devices from this browser</h2>
 <p>Install, update and remove Decky plugins without picking up your device. This page talks straight to your device on your network: nothing about your device or its plugins is collected or sent anywhere. <a href="/help.html#remote">How it works</a></p>
 <p class="rd-app" id="remote-app" hidden><button type="button" id="remote-app-install">Add to home screen or desktop</button> <span class="rd-hint">Opens this page as an app of its own, with its own icon and window. Nothing else is installed.</span></p>
+<p class="rd-app" id="remote-notify" hidden><button type="button" id="remote-notify-on">Notify me when a request finishes</button> <span class="rd-hint">Works while this page or app is still open. It doesn't go through a server.</span></p>
 </header>
 <div class="rd-layout">
 <aside class="rd-devices" aria-labelledby="rd-devices-title">
@@ -118,7 +119,7 @@ def remote_device_panel(lang: str = "en") -> str:
 </div>
 </dialog>
 <noscript>Enable JavaScript to connect to your device.</noscript>
-<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><script type="module" src="/remote-install.js"></script>
+<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><link rel="modulepreload" href="/remote-notify.js"><script type="module" src="/remote-install.js"></script>
 </section>"""
     return remote_page_uk.translate(html) if lang == "uk" else html
 
@@ -158,7 +159,7 @@ def remote_install_picker(plugin_id: str, safety: list[str] | None = None) -> st
 <p class="rc-pair"><button type="button" id="remote-refresh" hidden>Refresh</button><a id="remote-pair-new" class="btn" href="/remote-install/">Pair a device</a><span>Pair once, then install from any plugin page.</span></p>
 <p class="rd-hint">Your browser talks straight to your device on your network. Nothing about your device or its plugins is collected or sent anywhere. <a href="/help.html#remote">How to use it</a></p>
 </div>
-<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><script type="module" src="/remote-install.js"></script>
+<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><link rel="modulepreload" href="/remote-notify.js"><script type="module" src="/remote-install.js"></script>
 </dialog>"""
 
 

@@ -27,3 +27,12 @@ self.addEventListener('fetch', event => {
     }
   })());
 });
+
+// A tap on "request finished" (docs/remote-notify.js) goes back to an open page of this site, or opens the app.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const [open] = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    return open ? open.focus() : self.clients.openWindow('./');
+  })());
+});

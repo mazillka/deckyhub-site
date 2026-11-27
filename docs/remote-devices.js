@@ -1,5 +1,6 @@
 import { PAIRED_DEVICES_KEY, SELECTED_DEVICE_KEY, TERMINAL, deviceUrl, isPin, pinnedHashes, probeDevice } from './remote-core.js';
 import { translate } from './remote-i18n.js';
+import { setupPack } from './remote-plugins.js';
 
 // The paired devices: what the browser remembers of them, their cards and picker, and choosing one.
 
@@ -136,9 +137,19 @@ export function setupDevices(ctx) {
     if (device.lastUsed) meta.append(element(doc, 'span', '', translate(`Used ${ago(device.lastUsed)}`)));
     return meta;
   };
+  // The copy of the device's plugins kept in this browser, as a pack file: it is there when the device isn't (after a
+  // reset, say). It lives in the pairing's own entry, so forgetting the device removes it too.
+  const downloadSetup = device => {
+    const link = element(doc, 'a');
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(device.setup.pack, null, 2)], { type: 'application/json' }));
+    link.download = `DeckyHub-pack-${new Date(device.setup.savedAt).toISOString().slice(0, 10).replaceAll('-', '')}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  };
   const cardActions = device => {
     const actions = element(doc, 'div', 'rd-card-actions');
     actions.append(cardButton(doc, 'Rename', () => startRename(device, actions)), cardButton(doc, 'Forget', () => forgetDevice(device), 'rd-forget'));
+    if (device.setup?.pack) actions.append(cardButton(doc, 'Download plugin pack', () => downloadSetup(device)));
     return actions;
   };
   // The devices list: one card per paired device. A browser can hold several devices, and a device can be paired with
@@ -151,6 +162,15 @@ export function setupDevices(ctx) {
       item.append(cardMain(device, index, selected), cardMeta(device), cardActions(device));
       return item;
     }));
+  };
+  // Called each time the device's plugin list has loaded. A list with nothing to restore keeps the earlier copy.
+  ctx.keepSetup = plugins => {
+    const device = ctx.activeDevice();
+    const pack = setupPack(plugins);
+    if (!device || !pack) return;
+    device.setup = { savedAt: Date.now(), pack };
+    ctx.saveDevices();
+    renderCards(currentIndex());
   };
   // Which of the paired devices answer right now: checked once when the page opens, in parallel.
   const checkOnline = () =>
