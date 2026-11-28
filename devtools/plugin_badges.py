@@ -4,7 +4,7 @@ import re
 from html import escape
 
 from page_text import compact
-from plugin_data import store_activity, valid_count
+from plugin_data import new_project, store_activity, valid_count
 from scan_format import (
     SCAN_LABELS,
     SCAN_RESULTS,
@@ -30,11 +30,15 @@ def ai_evidence(entries: list[str]) -> str:
 def badges_of(
     stats: dict, scans: dict, warnings: dict, reports: dict | None = None, vt_reports: dict | None = None
 ) -> list[str]:
-    # Listed as: scan results, audit warnings, root, then the background facts (store, fork, Rust, AI).
+    # Listed as: scan results, audit warnings, root, then the background facts (new project, fork, store, Rust, AI).
     scanned, audit, root, background = [], [], [], []
     if stats.get("root"):
         root.append(
             '<li><span class="badge root">Runs as root</span> Its plugin.json asks Decky Loader to run its backend as root, with full access to the device. Many plugins need that for real reasons; install it only if you trust the author.</li>'
+        )
+    if new_project(stats):
+        background.append(
+            '<li><span class="badge new">New project</span> This plugin\'s GitHub repository was created less than 30 days ago. That says nothing about its quality or safety.</li>'
         )
     if stats.get("fork"):
         background.append(
@@ -113,7 +117,7 @@ def badges_of(
         scanned.append(
             f'<li><span class="badge {css}">{escape(prefix + label)}</span> Virus scan of <code>{escape(channel.get("file", ""))}</code> ({escape(channel.get("tag", ""))}): {escape(results)}.{caveat}</li>'
         )
-    order = ("Fork", "In Decky store", "Rust", "AI")
+    order = ("New project", "Fork", "In Decky store", "Rust", "AI")
     background.sort(key=lambda item: next(i for i, label in enumerate(order) if f">{label}</span>" in item))
     return scanned + audit + root + background
 
@@ -142,6 +146,8 @@ def flags_of(
     flags = []
     if store_only:
         return '<span class="flag-store">In Decky store</span>' if stats.get("store") else ""
+    if new_project(stats):
+        flags.append('<span class="flag-new">New project</span>')
     if stats.get("ai"):
         flags.append('<span class="flag-ai">✦ AI</span>')
     if stats.get("rust"):

@@ -63,6 +63,8 @@ function warningBadges(document, record, labels) {
 
 function noteBadges(document, record) {
   const found = [];
+  if (record.newProject)
+    found.push(badge(document, "New project", "info", "This plugin's GitHub repository was created less than 30 days ago. That says nothing about its quality or safety."));
   if (record.ai)
     found.push(
       badge(document, "AI", "info", "Likely developed with AI help. That says nothing about its quality or safety."),

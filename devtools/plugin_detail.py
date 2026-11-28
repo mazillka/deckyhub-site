@@ -118,7 +118,7 @@ def plugin_page(
         stats = {
             key: value
             for key, value in stats.items()
-            if key not in ("root", "fork", "warnings", "prereleaseWarnings", "ai", "rust")
+            if key not in ("root", "fork", "warnings", "prereleaseWarnings", "ai", "rust", "created")
         }
     badges = badges_of(stats, scans, warnings, reports, vt_reports)
     if not app.get("store") and prerelease_only(releases or []):
