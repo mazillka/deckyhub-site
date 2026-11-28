@@ -4,10 +4,12 @@ import json
 import re
 import sys
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "devtools"))
+import plugin_data
 import plugin_pages
 import plugin_readme
 
@@ -503,6 +505,18 @@ class PluginPageTests(unittest.TestCase):
             self.assertIn(text, page)
         self.assertIn("Threat found", page)  # the badge counts VirusTotal, not just ClamAV and YARA
         self.assertIn("✖ Threat found", plugin_pages.flags_of({}, scans, {}, vt))
+
+    def test_a_repository_under_30_days_old_is_a_new_project(self):
+        now = datetime(2026, 11, 28, tzinfo=timezone.utc)
+        self.assertTrue(plugin_data.new_project({"created": "2026-10-30T00:00:00Z"}, now))
+        for created in ("2026-10-29T00:00:00Z", None, "soon"):
+            self.assertFalse(plugin_data.new_project({"created": created}, now))
+        fresh = {"created": datetime.now(timezone.utc).isoformat()}
+        self.assertIn('<span class="badge new">New project</span>', "".join(plugin_pages.badges_of(fresh, {}, {})))
+        self.assertIn('<span class="flag-new">New project</span>', plugin_pages.flags_of(fresh, {}))
+        self.assertNotIn(
+            "New project", plugin_pages.flags_of({**fresh, "store": {"downloads": 1}}, {}, store_only=True)
+        )
 
     def test_rust_gets_a_badge_a_flag_and_nothing_on_a_store_only_page(self):
         stats = {"rust": True}

@@ -3,6 +3,7 @@
 import json
 import sys
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from scan_format import external_results, scan_kind
@@ -102,6 +103,15 @@ def load_data() -> dict:
     }
 
 
+def new_project(stats: dict, now: datetime | None = None) -> bool:
+    """The New project badge, as the app decides it: a GitHub repository under 30 days old. No readable date isn't new."""
+    try:
+        created = datetime.fromisoformat(str(stats.get("created")).replace("Z", "+00:00"))
+        return (now or datetime.now(timezone.utc)) - created < timedelta(days=30)
+    except (ValueError, TypeError):
+        return False
+
+
 def plugin_info(apps: list[dict], data: dict) -> dict:
     """What the Paired devices page shows for each installed plugin it can match to the registry: one compact record
     per repository (lowercase owner/name) with its numbers, badges and virus scan, plus the audit warnings' labels."""
@@ -122,6 +132,8 @@ def plugin_info(apps: list[dict], data: dict) -> dict:
             record["storeActivity"] = {"downloads": activity["downloads"], "updates": activity["updates"]}
         if stat.get("ai"):
             record["ai"] = True
+        if new_project(stat):
+            record["newProject"] = True
         if stat.get("rust"):
             record["rust"] = True
         for field in ("warnings", "prereleaseWarnings"):
