@@ -38,6 +38,11 @@ const SCAN_BADGES = {
   partial: ["Not fully scanned", "warn"],
 };
 
+// How many of the four scanners reported finding nothing, as the app counts it.
+const scanPassed = (scan) =>
+  [scan.clamav, scan.yara].filter((result) => result === "clean").length +
+  [scan.virusTotal, scan.metaDefender].filter((counts) => Array.isArray(counts) && !counts[0]).length;
+
 function warningBadges(document, record, labels) {
   const found = [];
   if (record.root)
@@ -49,7 +54,8 @@ function warningBadges(document, record, labels) {
     for (const code of record[field] || []) {
       if (field === "prereleaseWarnings" && (record.warnings || []).includes(code)) continue;
       const [label, hint] = labels[code] || [code, "The registry reported this audit finding."];
-      found.push(badge(document, prefix + label, code === "blocked" ? "bad" : "warn", hint));
+      const kind = code === "blocked" || code === "not-in-source" ? "bad" : "warn";
+      found.push(badge(document, prefix + label, kind, hint));
     }
   }
   return found;
@@ -71,7 +77,8 @@ function noteBadges(document, record) {
 
 function scanBadge(document, scan) {
   const [text, kind] = SCAN_BADGES[scan.kind] || ["Scanned", "warn"];
-  return badge(document, (scan.prerelease ? "Pre-release: " : "") + text, kind);
+  const count = scan.kind === "partial" ? ` · ${scanPassed(scan)}/4` : "";
+  return badge(document, (scan.prerelease ? "Pre-release: " : "") + text + count, kind);
 }
 
 const validCount = (value) => Number.isSafeInteger(value) && value >= 0;
@@ -126,10 +133,11 @@ function scanLine(document, scan) {
     results.push(`VirusTotal: ${scan.virusTotal[0]} of ${scan.virusTotal[1]} engines flagged it`);
   if (Array.isArray(scan.metaDefender))
     results.push(`MetaDefender: ${scan.metaDefender[0]} of ${scan.metaDefender[1]} engines flagged it`);
+  const caveat = scan.kind === "infected" ? "" : " A clean scan isn't proof of safety.";
   return textLine(
     document,
     translate(
-      `Virus scan of ${scan.tag || "the latest release"}: ${results.map((result) => translate(result)).join("; ")}. A clean scan isn't proof of safety.`,
+      `Virus scan of ${scan.tag || "the latest release"}: ${results.map((result) => translate(result)).join("; ")}.${caveat}`,
     ),
   );
 }
@@ -177,6 +185,33 @@ export function readPack(text) {
   ].slice(0, 200);
   if (!repos.length) throw new Error("This plugin pack has no plugins in it.");
   return { name: typeof data.name === "string" && data.name.trim() ? data.name.trim().slice(0, 60) : "Pack", repos };
+}
+
+// The device's setup as a pack DeckyHub can restore (the format of deckyhub-plugin's packs.py): the plugins it ties
+// to a repository, and by name the ones it can't. Null when there is nothing a pack could install.
+export function setupPack(installed) {
+  const plugins = [];
+  const manual = [];
+  const seen = new Set();
+  for (const plugin of installed) {
+    const name = String(plugin.name || "").slice(0, 100);
+    const repo = typeof plugin.repo === "string" ? plugin.repo : "";
+    if (!name || name.toLowerCase() === "deckyhub" || repo.toLowerCase() === "mazillka/deckyhub-plugin") continue;
+    const version = plugin.version && plugin.version !== "installed" ? { version: plugin.version.slice(0, 60) } : {};
+    if (plugin.identityUnverified === false && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+      if (seen.has(repo.toLowerCase())) continue;
+      seen.add(repo.toLowerCase());
+      plugins.push({ repo, name, ...version, ...(plugin.disabled ? { disabled: true } : {}) });
+    } else manual.push({ name, ...version });
+  }
+  if (!plugins.length) return null;
+  return {
+    schemaVersion: 1,
+    kind: "deckyhub-pack",
+    name: "My DeckyHub pack",
+    plugins,
+    ...(manual.length ? { manual } : {}),
+  };
 }
 
 // The pack's plugins that are installed on the device (never DeckyHub), and which of them are off or on.
@@ -326,7 +361,7 @@ async function fetchInstalled(loadPage, isStale) {
   }
 }
 
-export function createPluginList(root, { loadPage, request }) {
+export function createPluginList(root, { loadPage, request, onPlugins = (_plugins) => {} }) {
   const list = root.querySelector("#remote-plugins");
   const status = root.querySelector("#remote-plugins-status");
   const refresh = root.querySelector("#remote-plugins-refresh");
@@ -445,7 +480,10 @@ export function createPluginList(root, { loadPage, request }) {
     status.textContent = translate("Loading installed plugins…");
     try {
       const plugins = await fetchInstalled(loadPage, () => current !== generation);
-      if (plugins) render(plugins);
+      if (plugins) {
+        render(plugins);
+        onPlugins(plugins);
+      }
     } catch (error) {
       if (current !== generation) return;
       clearList();

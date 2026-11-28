@@ -4,7 +4,7 @@
   "short_name": "DeckyHub",
   "description": "Manage the Decky plugins on your paired devices and hear about updates.",
   "start_url": "./",
-  "scope": "./",
+  "scope": "../",
   "display": "standalone",
   "background_color": "#10151f",
   "theme_color": "#10151f",

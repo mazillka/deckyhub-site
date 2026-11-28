@@ -1,5 +1,6 @@
 import { createPluginList } from './remote-plugins.js';
 import { createUpdates } from './remote-updates.js';
+import { setupNotify } from './remote-notify.js';
 import { setupScan } from './remote-scan.js';
 import { setupShare } from './remote-share.js';
 import { setupConnection, setupStatus } from './remote-session.js';
@@ -69,9 +70,11 @@ function setupLists(ctx) {
   s.inventory = createPluginList(root, {
     loadPage: offset => ctx.send({ op: 'plugins', token: s.token, offset }),
     request: (id, action, name) => ctx.runRequest(id, action, name),
+    onPlugins: plugins => ctx.keepSetup?.(plugins),
   });
   // The Paired devices page only.
   if (!compact && !pluginId) {
+    setupNotify(root);
     s.updates = createUpdates(root, { summary: () => ctx.send({ op: 'summary', token: s.token }), device: () => (s.token ? ctx.activeDevice() : undefined), onResult: result => s.inventory?.setUpdates(result) });
   }
 }

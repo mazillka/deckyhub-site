@@ -3,6 +3,7 @@
 import json
 import sys
 import urllib.request
+from pathlib import Path
 
 from scan_format import external_results, scan_kind
 
@@ -24,29 +25,21 @@ METADEFENDER_URL = REGISTRY_RAW + "metadefender-reports/reports.json"
 VIRUSTOTAL_URL = REGISTRY_RAW + "virustotal-reports/reports.json"
 
 
-# What the audit's warnings are called and mean (id: (label, hint)); the app and the installer say the same.
-WARNINGS = {
-    "blocked": ("Blocked by audit", "The audit found malware or a broken archive. Not recommended for installation."),
-    "private-data": (
-        "Reads private data",
-        "Its code reads Steam login data, SSH keys or secrets from the environment.",
-    ),
-    "persistence": (
-        "Changes system startup",
-        "It edits shell profiles, preloads libraries, loads kernel modules or adds device rules, which keep working outside Decky.",
-    ),
-    "not-in-source": (
-        "Very high risk: Download includes code that is not in GitHub",
-        "The downloaded release contains code the audit could not match to the published source. This could hide malicious changes. Review the release before installing; a mismatch does not prove malware.",
-    ),
-    "obfuscated": ("Hidden code", "It contains encoded or packed code that's hard to read."),
-    "no-tls-check": (
-        "Skips HTTPS checks",
-        "It turns off certificate checks, so what it downloads could be tampered with.",
-    ),
-    "runs-downloads": ("Runs downloaded scripts", "It downloads a script and runs it straight away."),
-    "vulnerable": ("Known vulnerabilities", "It bundles libraries with published security flaws."),
-}
+WARNINGS_URL = REGISTRY_RAW + "refs/heads/main/registry/warnings.json"
+
+
+def warning_texts(table: dict) -> dict[str, tuple[str, str]]:
+    """{id: (label, hint)} of a warnings.json table, leaving out an entry that lacks either."""
+    return {
+        code: (item["label"], item["hint"])
+        for code, item in table.items()
+        if isinstance(item, dict) and all(isinstance(item.get(key), str) and item[key] for key in ("label", "hint"))
+    }
+
+
+# What the audit's warnings are called and mean, from the registry's warnings.json. This copy stands in when the
+# build can't read the registry's: without a label, a plugin page would leave the warning out.
+WARNINGS = warning_texts(json.loads(Path(__file__).with_name("warnings.json").read_text(encoding="utf-8"))["warnings"])
 
 
 def fetch(url: str) -> str | None:
@@ -105,7 +98,7 @@ def load_data() -> dict:
         "reports": fetch_json(METADEFENDER_URL, "reports"),
         "vt": fetch_json(VIRUSTOTAL_URL, "reports"),
         "releases": fetch_json(RELEASES_URL, "releases"),
-        "warnings": WARNINGS,
+        "warnings": {**WARNINGS, **warning_texts(fetch_json(WARNINGS_URL, "warnings"))},
     }
 
 

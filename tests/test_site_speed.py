@@ -1,5 +1,4 @@
-"""What keeps deckyhub.com fast: the home page's walkthrough is the animated WebP (about a third of the GIF)
-for every browser that can show it, and the pages that load the remote-install modules fetch them together."""
+"""What keeps deckyhub.com fast: the home page's walkthrough is downloaded only when played, and the pages that load the remote-install modules fetch them together."""
 
 import re
 import sys
@@ -12,14 +11,14 @@ import plugin_pages  # noqa: E402
 
 
 class SiteSpeedTests(unittest.TestCase):
-    def test_the_home_page_offers_the_animated_webp_before_the_gif(self):
+    def test_the_home_page_shows_a_still_picture_and_plays_the_walkthrough_only_on_request(self):
         for path, prefix in (("docs/index.html", ""), ("docs/uk/index.html", "../")):
             page = (ROOT / path).read_text(encoding="utf-8")
-            picture = page[page.index("<picture>") : page.index("</picture>")]
-            self.assertIn(f'<source type="image/webp" srcset="{prefix}img/deckyhub.webp">', picture, path)
-            # The GIF stays as the fallback, after the WebP, and the reduced-motion still comes first.
-            self.assertLess(picture.index("prefers-reduced-motion"), picture.index("image/webp"), path)
-            self.assertLess(picture.index("image/webp"), picture.index(f'src="{prefix}img/deckyhub.gif"'), path)
+            self.assertIn(f'<img id="tour" src="{prefix}img/discover.webp"', page, path)
+            # Moving content that runs over five seconds needs a way to stop it (WCAG 2.2.2): none starts by itself.
+            self.assertIn(f'data-play="{prefix}img/deckyhub.webp"', page, path)
+            self.assertNotIn(f'src="{prefix}img/deckyhub.', page, path)
+            self.assertNotIn(f'srcset="{prefix}img/deckyhub.', page, path)
 
     def test_every_page_that_loads_the_remote_modules_preloads_the_ones_they_import(self):
         imports = set()
@@ -45,7 +44,7 @@ class SiteSpeedTests(unittest.TestCase):
         self.assertEqual(scripts, 3)
         for name in imports:
             self.assertEqual(source.count(f'<link rel="modulepreload" href="/{name}">'), scripts, name)
-        self.assertEqual(len(imports), 10)
+        self.assertEqual(len(imports), 11)
 
     def test_the_installed_app_asks_the_server_before_using_a_cached_file(self):
         worker = (ROOT / "docs" / "remote-install" / "sw.js").read_text(encoding="utf-8")

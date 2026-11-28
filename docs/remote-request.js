@@ -1,5 +1,6 @@
 import { REQUEST_STATES, TERMINAL, sleep } from './remote-core.js';
 import { translate } from './remote-i18n.js';
+import { notifyFinished } from './remote-notify.js';
 
 // One request to the device (install, uninstall, enable, disable): sending it, following it until it ends,
 // and what the page says along the way.
@@ -96,12 +97,14 @@ export function setupRequests(ctx) {
   const finishRequest = state => {
     ctx.flow(SUCCEEDED.has(state) ? 'done' : 'failed');
     ctx.say(outcomeMessage(state));
+    void notifyFinished(outcomeMessage(state), ctx.doc);
     endRequest();
     if (buttons.cancel) buttons.cancel.disabled = true;
     return SUCCEEDED.has(state) || state === 'unknown';
   };
   const failRequest = error => {
     ctx.flow('failed');
+    void notifyFinished('Check the request on DeckyHub: its outcome is not known.', ctx.doc);
     if (error?.code === 'request_not_found') {
       // The device no longer has this request (it restarted, say).
       endRequest();

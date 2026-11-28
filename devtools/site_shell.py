@@ -37,11 +37,14 @@ LINKS_UK = [
 NAV_STYLE = """nav.site-nav{position:sticky;top:0;z-index:5;background:rgba(16,21,31,.94);backdrop-filter:blur(8px);border-bottom:1px solid #2e405a}
 nav.site-nav .site-nav-inner{max-width:1100px;margin:auto;padding:0 20px;display:flex;align-items:center;gap:24px;min-height:56px}
 nav.site-nav .site-brand{flex:none;color:#eef4ff;font-weight:700;text-decoration:none}
-nav.site-nav .site-links{display:flex;gap:20px;align-items:center;overflow-x:auto;white-space:nowrap;margin-left:auto;scrollbar-width:thin}
+nav.site-nav .site-links{display:flex;flex-wrap:wrap;justify-content:flex-end;column-gap:20px;align-items:center;white-space:nowrap;margin-left:auto}
 nav.site-nav .site-links a{color:#b6c3d4;text-decoration:none;font-size:.95rem;padding:16px 0}
 nav.site-nav .site-links a:hover,nav.site-nav .site-links a[aria-current=page]{color:#fff}
 nav.site-nav a:focus-visible{outline:2px solid #4b9cf0;outline-offset:3px}
-@media(max-width:640px){nav.site-nav .site-nav-inner{padding:0 16px;gap:16px}nav.site-nav .site-links{gap:16px}}
+/* Where the links need a second row (the Ukrainian ones sooner), the menu is too tall to keep stuck to the top: it would cover headings jumped to. */
+@media(max-width:860px){nav.site-nav{position:static}}
+@media(max-width:1080px){html:lang(uk) nav.site-nav{position:static}}
+@media(max-width:640px){nav.site-nav .site-nav-inner{padding:6px 16px;flex-direction:column;align-items:flex-start;gap:0}nav.site-nav .site-links{justify-content:flex-start;margin-left:0;column-gap:16px}nav.site-nav .site-links a{padding:10px 0}}
 /* A short screen (the Steam Deck's browser is about 914x520, a phone held sideways less) needs the room for reading: the menu scrolls away. */
 @media(max-height:600px){nav.site-nav{position:static}}
 .skip{position:absolute;left:-9999px;top:8px;z-index:20;background:#fff;color:#10151f;padding:8px 14px;border-radius:6px;font-weight:600;text-decoration:none}.skip:focus{left:8px}

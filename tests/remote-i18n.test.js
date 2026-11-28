@@ -41,6 +41,10 @@ test("messages with a name or a number are translated too", () => {
   assert.equal(translate("12 installed plugins", "uk"), "Встановлено 12 плагінів");
   assert.equal(translate("Pre-release: Nothing flagged", "uk"), "Попередній випуск: Нічого не позначено");
   assert.equal(
+    translate("Pre-release: Not fully scanned · 3/4", "uk"),
+    "Попередній випуск: Перевірено не повністю · 3/4",
+  );
+  assert.equal(
     translate("Steam Deck has 2 plugin updates waiting: A 1, B 2.", "uk"),
     "Steam Deck: на оновлення чекає 2 плагіни: A 1, B 2.",
   );
@@ -48,6 +52,10 @@ test("messages with a name or a number are translated too", () => {
   assert.equal(
     translate("Virus scan of v1.2: ClamAV: no threats found. A clean scan isn't proof of safety.", "uk"),
     "Перевірка на віруси v1.2: ClamAV: no threats found. Чиста перевірка не доводить безпеку.",
+  );
+  assert.equal(
+    translate("Virus scan of v1.2: ClamAV: threat found.", "uk"),
+    "Перевірка на віруси v1.2: ClamAV: threat found.",
   );
 });
 

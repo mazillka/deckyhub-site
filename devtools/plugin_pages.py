@@ -170,7 +170,7 @@ def write_pages(out, apps: list[dict], releases_page: str, data: dict) -> list[t
         paired_devices_page(
             shell,
             "Manage paired devices | DeckyHub",
-            "Choose a paired device to review, install or remove Decky plugins.",
+            "Choose a paired device to see its Decky plugins, then install, update or remove them over your own network. An experimental DeckyHub page.",
             path="paired-devices/",
         ),
         encoding="utf-8",
@@ -179,24 +179,24 @@ def write_pages(out, apps: list[dict], releases_page: str, data: dict) -> list[t
     uk_texts = {
         "remote-install": (
             "Сполучені пристрої | DeckyHub",
-            "Сполучіть пристрій і керуйте його встановленими плагінами Decky.",
+            "Сполучіть браузер із пристроєм, щоб установлювати, оновлювати й видаляти плагіни Decky у своїй мережі. Експериментальна функція DeckyHub.",
         ),
         "paired-devices": (
             "Керування сполученими пристроями | DeckyHub",
-            "Виберіть сполучений пристрій, щоб переглянути, встановити або видалити плагіни Decky.",
+            "Виберіть сполучений пристрій, щоб переглянути його плагіни Decky, а потім установити, оновити чи видалити їх у своїй мережі.",
         ),
     }
     for folder, (uk_title, uk_description) in uk_texts.items():
         (out / "uk" / folder).mkdir(parents=True, exist_ok=True)
         (out / "uk" / folder / "index.html").write_text(
-            paired_devices_page(shell, uk_title, uk_description, lang="uk", path=f"uk/{folder}/"),
+            paired_devices_page(shell, uk_title, uk_description, lang="uk", path="uk/paired-devices/"),
             encoding="utf-8",
         )
     (out / "paired-devices.html").write_text(
         paired_devices_page(
             shell,
             "Device pairing | DeckyHub",
-            "Open your saved DeckyHub pairing link and manage plugins on your device.",
+            "Open your saved DeckyHub pairing link to see, install, update and remove Decky plugins on your device over your own network.",
             # The same page as /paired-devices/ (a link people already saved): it names that one as its canonical.
             path="paired-devices/",
         ),
@@ -205,11 +205,9 @@ def write_pages(out, apps: list[dict], releases_page: str, data: dict) -> list[t
     urls = [
         (f"{SITE}plugins/", today),
         (f"{SITE}plugins/known-issues.html", today),
-        (f"{SITE}remote-install/", today),
         *category_urls,
-        (f"{SITE}paired-devices/", today),
-        (f"{SITE}uk/paired-devices/", today),
-        (f"{SITE}uk/remote-install/", today),
+        (f"{SITE}paired-devices/", ""),
+        (f"{SITE}uk/paired-devices/", ""),
     ]
     name_counts = collections.Counter(app["name"].casefold() for app in apps)
     by_author: dict[str, list[dict]] = {}
@@ -234,5 +232,11 @@ def write_pages(out, apps: list[dict], releases_page: str, data: dict) -> list[t
             ),
             encoding="utf-8",
         )
-        urls.append((f"{SITE}plugins/{app['id']}.html", ((stats.get(key) or {}).get("updated") or today)[:10]))
+        # The page changes with a new release and with a new scan of it.
+        changed = [(stats.get(key) or {}).get("updated")] + [
+            ((channel or {}).get("clamav") or {}).get("scannedAt")
+            for channel in (scans.get(key) or {}).values()
+            if isinstance(channel, dict)
+        ]
+        urls.append((f"{SITE}plugins/{app['id']}.html", max((str(d)[:10] for d in changed if d), default=today)))
     return urls

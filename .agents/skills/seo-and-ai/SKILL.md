@@ -1,6 +1,6 @@
 ---
 name: seo-and-ai
-description: Keep DeckyHub's website (deckyhub.com, its plugin pages and contributor pages) optimized for search engines and AI assistants. Use when changing any web page, devtools/build-site.py, devtools/plugin_pages.py, robots.txt, sitemap.xml, llms.txt or structured data, when adding a page, or before a release.
+description: Keep DeckyHub's website (deckyhub.com, its plugin pages and contributor pages) optimized for search engines and AI assistants. Use when changing any web page, devtools/build-site.py, devtools/plugin_*.py, robots.txt, sitemap.xml, llms.txt or structured data, when adding a page, or before a release.
 ---
 
 # SEO and AI optimization
@@ -26,7 +26,7 @@ deckyhub.com exists to be found, by people searching for Decky plugins and by AI
 
 `plugins/category/<slug>.html` (one per registry category): counts and the most downloaded plugins from the data, linked from every plugin page, the catalog and each other. They exist so plugin pages are reachable in two clicks and each category has a page of its own; keep their facts computed from the data.
 
-## Plugin pages (`devtools/plugin_pages.py`)
+## Plugin pages (`devtools/plugin_pages.py` and the modules it imports)
 
 One page per registry plugin, built daily: name, description, category, downloads, stars, latest release, badges and the security scans (ClamAV, YARA, VirusTotal by SHA-256, MetaDefender). Keep the title pattern `<name>: Decky Loader plugin | DeckyHub`, descriptions cut at a word boundary, and the same facts the app shows. Anything the build can't fetch is left out, never invented.
 

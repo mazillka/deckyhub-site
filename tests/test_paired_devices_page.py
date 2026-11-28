@@ -105,7 +105,9 @@ class UkrainianPageTests(unittest.TestCase):
         page = plugin_pages.paired_devices_page(SHELL)
         self.assertIn('<html lang="en">', page)
         self.assertIn('hreflang="uk" lang="uk">Українська</a>', page)
-        self.assertIn('href="https://deckyhub.com/uk/remote-install/"', page)
+        self.assertIn('href="https://deckyhub.com/uk/paired-devices/"', page)
+        # /remote-install/ stays reachable, and names the Paired devices page as the one to index.
+        self.assertIn('<link rel="canonical" href="https://deckyhub.com/paired-devices/">', page)
 
 
 class PhoneWarningsTests(unittest.TestCase):
@@ -119,7 +121,7 @@ class PhoneWarningsTests(unittest.TestCase):
         ]
         card = plugin_pages.remote_install_picker("some-plugin", warned)
         window = self.window_of(card)
-        for text in ("Check before you send", "Runs as root", "Virus scan", "nobody reviews these plugins"):
+        for text in ("Check before you send", "Runs as root", "Virus scan", "doesn't review these plugins"):
             self.assertIn(text, window)
         for part in ("remote-risk-send", "remote-risk-cancel", "remote-risk-close"):
             self.assertIn(f'id="{part}"', window)

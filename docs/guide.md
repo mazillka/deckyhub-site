@@ -59,7 +59,7 @@ Cards can carry these badges. **More** on the "What the badges on plugins mean" 
 | No description | Its author hasn't said what it does. Check its repository before installing. |
 | Nothing flagged / Threat found / Not fully scanned | The virus scans of the release you'd install: ClamAV, YARA, VirusTotal and MetaDefender. Nothing flagged only once all four have reported and none flagged it; any engine flagging it is Threat found (it may be a false positive; open Manage for the report and decide); anything else is Not fully scanned (Manage says which scanner hasn't reported). The number beside the badge is how many of the four found nothing. No badge until it's been scanned. New, pending, failed, or unsupported scans may not have a result yet. The scans only catch known malware and can be evaded, so a clean scan isn't proof of safety. |
 
-**DeckyHub is not the Decky store, and nobody reviews these plugins.** A clean scan only means no known malware was found.
+**DeckyHub is not the Decky store, and it doesn't review these plugins.** A clean scan only means no known malware was found.
 
 The selected ZIP's scan report also includes DeckyHub's independent automated audit, separate from ClamAV, YARA and the community audit below. It checks selected code patterns and whether the manifest requests root, compares eligible files with the repository's current release-tag source, and inventories identifiable packages and binaries. Known vulnerabilities in identified package versions are checked using OSV; package names and versions are sent to that service. Generated files, bundled code and binaries may not be comparable or identifiable, and a source match does not prove the ZIP was built from it. Findings need review and may not indicate harm; no root request does not rule out privileged behavior. Incomplete, failed, missing or unmatched reports cannot establish what was checked, and even completed checks cannot prove a plugin is safe.
 
@@ -67,14 +67,14 @@ These warnings come from Decky Extended Plugins' automated [security audit](http
 
 | Warning | What the audit found |
 | --- | --- |
-| Blocked by audit | Malware or a broken archive. Not recommended for installation. |
-| Reads private data | It reads Steam login data, SSH keys or secrets from the environment. |
-| Changes system startup | It edits shell profiles, preloads libraries, loads kernel modules or adds device rules, which keep working outside Decky. |
+| Blocked by audit | The audit blocked this release, for example for suspected malware or a broken archive. |
+| Reads private data | The audit found code that may access Steam login data, SSH keys or secrets from the environment. |
+| Changes system startup | The audit found code that may change shell profiles, preloaded libraries, kernel modules or device rules. Such changes can keep working outside Decky. |
 | Code not in its repo | The release has scripts or programs that aren't in its GitHub source, so you can't read what they do. |
-| Hidden code | It contains encoded or packed code that's hard to read. |
-| Skips HTTPS checks | It turns off certificate checks, so what it downloads could be tampered with. |
-| Runs downloaded scripts | It downloads a script and runs it straight away. |
-| Known vulnerabilities | It bundles libraries with published security flaws. |
+| Hidden code | The audit found encoded or packed code that's hard to read. |
+| Skips HTTPS checks | The audit found code that turns off certificate checks, so what it downloads could be tampered with. |
+| Runs downloaded scripts | The audit found code that downloads a script and runs it straight away. |
+| Known vulnerabilities | The audit found bundled libraries with published security flaws. |
 
 A warning about a newer pre-release is labelled **Pre-release:**. Download counts, stars and warnings come from the registry, refreshed every hour.
 

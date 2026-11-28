@@ -136,6 +136,8 @@ const UK = new Map(
     "Unable to load installed plugins.": "Не вдалося завантажити встановлені плагіни.",
     "Pair a device to see its installed plugins.": "Додайте пристрій, щоб побачити його встановлені плагіни.",
     "This is not a DeckyHub plugin pack.": "Це не пак плагінів DeckyHub.",
+    "Download plugin pack": "Завантажити пак плагінів",
+    "Check the request on DeckyHub: its outcome is not known.": "Перевірте запит у DeckyHub: його результат невідомий.",
     "This plugin pack has no plugins in it.": "У цьому паку немає плагінів.",
     "This file is too large to be a plugin pack.": "Цей файл завеликий для пака плагінів.",
     // what DeckyHub knows about a plugin
@@ -177,6 +179,7 @@ const RULES = [
     (message, detail) => `${ukrainian(message)} (${detail})`,
   ],
   [/^Pre-release: (.+)$/, (rest) => `Попередній випуск: ${ukrainian(rest)}`],
+  [/^Not fully scanned · (\d\/4)$/, (count) => `${ukrainian("Not fully scanned")} · ${count}`],
   [/^(.+) selected\.$/, (name) => `${name} вибрано.`],
   [
     /^(.+) forgotten in this browser\. Remove this browser under Paired browsers in DeckyHub on the device too\.$/,
@@ -231,8 +234,9 @@ const RULES = [
     (scanner, flagged, total) => `${scanner}: ${flagged} із ${total} рушіїв позначили його`,
   ],
   [
-    /^Virus scan of (.+?): (.+)\. A clean scan isn't proof of safety\.$/,
-    (tag, results) => `Перевірка на віруси ${ukrainian(tag)}: ${results}. Чиста перевірка не доводить безпеку.`,
+    /^Virus scan of (.+?): (.+?)\.( A clean scan isn't proof of safety\.)?$/,
+    (tag, results, caveat) =>
+      `Перевірка на віруси ${ukrainian(tag)}: ${results}.${caveat ? " Чиста перевірка не доводить безпеку." : ""}`,
   ],
   [
     /^(.+) has not checked for updates yet\. Open DeckyHub on it\.$/,

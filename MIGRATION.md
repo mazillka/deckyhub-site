@@ -5,8 +5,8 @@ This repository was assembled from [deckyhub-plugin](https://github.com/mazillka
 ## Left to do
 
 - Check Remote Install from a paired phone or browser with the device awake.
-- Merge the removal of the website in deckyhub-plugin ([#566](https://github.com/mazillka/deckyhub-plugin/pull/566): `develop`, then `main`). Until it reaches `main`, the plugin's old workflow still publishes a copy at mazillka.github.io/deckyhub-plugin.
-- Protect `main` and `develop` like the other repositories.
+
+DeckyHub 3.4.9 removed the website from deckyhub-plugin. `main` and `develop` here are protected by rulesets that require the `test` check.
 
 ## After a DeckyHub release
 

@@ -54,12 +54,18 @@ def popular_cards(apps: list[dict], data: dict, count: int = 12, prefix: str = "
 
 FILTER_JS = """(function(){var q=document.getElementById("q"),cards=[].slice.call(document.querySelectorAll("#list .app")),chips=[].slice.call(document.querySelectorAll(".chips button[data-cat]")),ages=[].slice.call(document.querySelectorAll(".chips button[data-age]")),store=document.getElementById("store-only"),count=document.getElementById("count"),cat="",age=0,inStore=false;
 cards.forEach(function(c){c._t=[c.querySelector("strong"),c.querySelector("p"),c.querySelector("small")].map(function(e){return e?e.textContent:""}).join(" ").toLowerCase()+" "+(c.dataset.repo||"")});
-function run(){var t=q.value.trim().toLowerCase(),n=0,since=age?new Date(Date.now()-age*864e5).toISOString().slice(0,10):"";cards.forEach(function(c){var ok=(!cat||c.dataset.cat===cat)&&(!inStore||c.dataset.store)&&(!since||(c.dataset.updated||"")>=since)&&(!t||c._t.indexOf(t)>-1);c.hidden=!ok;if(ok)n++});count.textContent=n+" of "+cards.length+" plugins";chips.forEach(function(b){b.setAttribute("aria-pressed",String((b.dataset.cat||"")===cat))});ages.forEach(function(b){b.setAttribute("aria-pressed",String(+b.dataset.age===age))})}
-function fromHash(){var m=/^#cat=([a-z0-9-]+)/.exec(location.hash);cat=m?m[1]:"";run()}
-chips.forEach(function(b){b.addEventListener("click",function(){cat=b.dataset.cat||"";history.replaceState(null,"",cat?"#cat="+cat:location.pathname);run()})});
-ages.forEach(function(b){b.addEventListener("click",function(){age=+b.dataset.age;run()})});
-if(store)store.addEventListener("click",function(){inStore=!inStore;store.setAttribute("aria-pressed",String(inStore));run()});
-q.addEventListener("input",run);window.addEventListener("hashchange",fromHash);fromHash()})();"""
+function run(){var words=q.value.toLowerCase().split(/\\s+/).filter(Boolean),n=0,since=age?new Date(Date.now()-age*864e5).toISOString().slice(0,10):"";cards.forEach(function(c){var ok=(!cat||c.dataset.cat===cat)&&(!inStore||c.dataset.store)&&(!since||(c.dataset.updated||"")>=since)&&words.every(function(w){return c._t.indexOf(w)>-1});c.hidden=!ok;if(ok)n++});count.textContent=n+" of "+cards.length+" plugins";chips.forEach(function(b){b.setAttribute("aria-pressed",String((b.dataset.cat||"")===cat))});ages.forEach(function(b){b.setAttribute("aria-pressed",String(+b.dataset.age===age))})}
+var box=document.getElementById("filter-box"),timer;
+function save(){clearTimeout(timer);var p=new URLSearchParams();if(cat)p.set("cat",cat);if(q.value.trim())p.set("q",q.value.trim());if(inStore)p.set("store","1");if(age)p.set("age",age);var s=p.toString();history.replaceState(history.state,"",location.pathname+location.search+(s?"#"+s:""))}
+// Any other hash (the skip link, a device pairing link) is not about the filters and leaves them alone.
+function fromHash(){var p=new URLSearchParams(location.hash.slice(1));if(location.hash&&!["cat","q","store","age"].some(function(k){return p.has(k)}))return run();cat=p.get("cat")||"";q.value=p.get("q")||"";inStore=!!store&&p.get("store")==="1";age=+p.get("age")||0;if(store)store.setAttribute("aria-pressed",String(inStore));if(cat||inStore||age)box.open=true;run()}
+chips.forEach(function(b){b.addEventListener("click",function(){cat=b.dataset.cat||"";save();run()})});
+ages.forEach(function(b){b.addEventListener("click",function(){age=+b.dataset.age;save();run()})});
+if(store)store.addEventListener("click",function(){inStore=!inStore;store.setAttribute("aria-pressed",String(inStore));save();run()});
+// Typing writes the address once it pauses: browsers refuse very frequent history updates.
+q.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(save,300);run()});q.addEventListener("change",save);
+box.open=window.matchMedia("(min-width:641px) and (min-height:601px)").matches;
+window.addEventListener("hashchange",fromHash);fromHash()})();"""
 
 
 # A category page lists this many plugins (the most downloaded); the catalog has the rest.
@@ -158,18 +164,17 @@ def catalog_page(shell: dict[str, str], apps: list[dict], data: dict) -> str:
         chips += f'<button type="button" id="store-only" aria-pressed="false">In Decky store {in_store}</button>'
     body = f"""<p class="crumbs"><a href="/">DeckyHub</a> › Plugins</p>
 <h1>Decky plugins</h1>
-<p><a class="btn ghost" href="/remote-install/">Paired devices</a></p>
 <p id="remote-device-ready" role="status" hidden>Device details received. Choose a plugin to pair with your device and request installation.</p>
-<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><script type="module" src="/remote-install.js"></script>
+<link rel="modulepreload" href="/remote-core.js"><link rel="modulepreload" href="/remote-i18n.js"><link rel="modulepreload" href="/remote-plugins.js"><link rel="modulepreload" href="/remote-updates.js"><link rel="modulepreload" href="/remote-scan.js"><link rel="modulepreload" href="/remote-share.js"><link rel="modulepreload" href="/remote-session.js"><link rel="modulepreload" href="/remote-devices.js"><link rel="modulepreload" href="/remote-pairing.js"><link rel="modulepreload" href="/remote-request.js"><link rel="modulepreload" href="/remote-notify.js"><script type="module" src="/remote-install.js"></script>
 <p class="lead">{len(apps)} Decky Loader plugins, most downloaded first. Install any of them from Gaming Mode with <a href="/">DeckyHub</a>, which also checks them for updates.</p>
 <p class="note">Every plugin belongs to its authors. DeckyHub doesn't make, review or vouch for them, and a plugin's page shows its notes (AI help, root, audit warnings) and security scans; <a href="/plugins/known-issues.html">Known issues</a> lists every plugin with a warning. Missing one? <a href="/contribute/">Add a plugin</a>.</p>
-<p class="note">Browse by category: {category_links(categories)}</p>
-<div class="filters"><input id="q" type="search" placeholder="Search plugins" aria-label="Search plugins" autocomplete="off"><div class="chips" role="group" aria-label="Categories">{chips}</div><div class="chips" role="group" aria-label="Latest release">{ages}</div></div>
+<div class="filters"><input id="q" type="search" placeholder="Search plugins" aria-label="Search plugins" autocomplete="off"><details class="more" id="filter-box"><summary>Filters</summary><div class="chips" role="group" aria-label="Categories">{chips}</div><div class="chips" role="group" aria-label="Latest release">{ages}</div></details></div>
 {CARD_LEGEND}
 <p class="note" id="count" aria-live="polite">{len(apps)} plugins</p>
 <div class="catalog" id="list">
 {chr(10).join(card(app, data) for app in ordered)}
 </div>
+<p class="note">Browse by category: {category_links(categories)}</p>
 <script>{FILTER_JS}</script>"""
     listing = json_ld(
         {
